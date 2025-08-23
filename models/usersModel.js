@@ -28,6 +28,16 @@ const userSchema = new mongoose.Schema(
       min: 8,
       required: true,
     },
+    role: {
+      type: String,
+      required: true,
+      default: 0, //1 for admin , 0 for normal users/clients
+    },
+    status: {
+      type: String,
+      required: true,
+      default: 0, //0 for inactive users when payment is verified then admin can do it 1 means active
+    },
   },
   { timestamps: true }
 );

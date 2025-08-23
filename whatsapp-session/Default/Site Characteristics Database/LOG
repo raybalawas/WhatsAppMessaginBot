@@ -1,3 +1,9 @@
+<<<<<<< HEAD
 2025/08/05-18:55:02.583 2b00 Reusing MANIFEST D:\reactProjects\a_send_mesage_to_cmpnys\whatsapp-session\Default\Site Characteristics Database/MANIFEST-000001
 2025/08/05-18:55:02.584 2b00 Recovering log #3
 2025/08/05-18:55:02.584 2b00 Reusing old log D:\reactProjects\a_send_mesage_to_cmpnys\whatsapp-session\Default\Site Characteristics Database/000003.log 
+=======
+2025/08/07-11:49:53.845 458c Reusing MANIFEST D:\reactProjects\whatsapp\whatsapp-session\Default\Site Characteristics Database/MANIFEST-000001
+2025/08/07-11:49:53.919 458c Recovering log #6
+2025/08/07-11:49:53.932 458c Reusing old log D:\reactProjects\whatsapp\whatsapp-session\Default\Site Characteristics Database/000006.log 
+>>>>>>> fe67534 (Initial commit: WhatsApp Messaging project)
