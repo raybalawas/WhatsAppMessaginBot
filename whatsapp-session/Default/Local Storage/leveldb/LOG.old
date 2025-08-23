@@ -1,9 +1,0 @@
-<<<<<<< HEAD
-2025/08/05-18:53:03.597 26bc Reusing MANIFEST D:\reactProjects\a_send_mesage_to_cmpnys\whatsapp-session\Default\Local Storage\leveldb/MANIFEST-000001
-2025/08/05-18:53:03.606 26bc Recovering log #3
-2025/08/05-18:53:03.608 26bc Reusing old log D:\reactProjects\a_send_mesage_to_cmpnys\whatsapp-session\Default\Local Storage\leveldb/000003.log 
-=======
-2025/08/07-11:41:11.890 4078 Reusing MANIFEST D:\reactProjects\whatsapp\whatsapp-session\Default\Local Storage\leveldb/MANIFEST-000001
-2025/08/07-11:41:11.897 4078 Recovering log #3
-2025/08/07-11:41:11.898 4078 Reusing old log D:\reactProjects\whatsapp\whatsapp-session\Default\Local Storage\leveldb/000003.log 
->>>>>>> fe67534 (Initial commit: WhatsApp Messaging project)
