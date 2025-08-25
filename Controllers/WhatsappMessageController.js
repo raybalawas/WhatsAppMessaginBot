@@ -94,55 +94,68 @@ const MessageSend = async (req, res) => {
         }
 
         // STEP 2: If not found in search → fallback to wa.me
+        let waPage = null;
         if (!chatOpened) {
-          await page.goto(`https://wa.me/${formattedPhone}`);
-          await page.waitForSelector('a[href*="send"]', { timeout: 15000 });
-          const startChatBtn = await page.$('a[href*="send"]');
-          await startChatBtn.click();
-          await page.waitForSelector(
-            'div[contenteditable="true"][data-tab="10"]',
-            {
-              timeout: 15000,
-            }
-          );
-          console.log(`🌐 Opened chat with wa.me for ${phone}`);
+          waPage = await browser.newPage(); // open new tab
+          await waPage.goto(`https://wa.me/${formattedPhone}`, {
+            waitUntil: "domcontentloaded",
+          });
+
+          try {
+            const startChatBtn = await waPage.waitForSelector(
+              'a[href*="send"]',
+              { timeout: 5000 }
+            );
+            await startChatBtn.click();
+
+            await waPage.waitForSelector(
+              'div[contenteditable="true"][data-tab="10"]',
+              { timeout: 15000 }
+            );
+            console.log(`🌐 Opened chat with wa.me for ${phone}`);
+          } catch (err) {
+            console.log(`⚠️ ${phone} is NOT on WhatsApp. Skipping...`);
+            await waPage.close();
+            processed.push({ phone, status: "not_on_whatsapp" });
+            continue; // ✅ skip to next number
+          }
         }
 
         // STEP 3: Type and send message
-        const inputBox = await page.$(
+        const activePage = waPage || page; // use waPage if opened, else main page
+        const inputBox = await activePage.$(
           'div[contenteditable="true"][data-tab="10"]'
         );
-        await inputBox.type(message, { delay: 250 });
-        await page.keyboard.press("Enter");
+        await inputBox.type(message, { delay: 50 });
+        await activePage.keyboard.press("Enter");
         console.log(`✅ Text sent to ${phone}`);
 
         // STEP 4: Attach file if provided
         if (anyDesignFile) {
           try {
-            const attachBtn = await page.waitForSelector(
+            const attachBtn = await activePage.waitForSelector(
               'span[data-icon="plus-rounded"], span[data-icon="clip"]',
               { timeout: 15000 }
             );
             await attachBtn.click();
 
-            const fileInput = await page.waitForSelector('input[type="file"]', {
-              timeout: 10000,
-            });
+            const fileInput = await activePage.waitForSelector(
+              'input[type="file"]',
+              {
+                timeout: 10000,
+              }
+            );
             await fileInput.uploadFile(anyDesignFile);
 
-            // ✅ Now wait for the real send button after attaching
             try {
-              const sendBtn = await page.waitForSelector(
+              const sendBtn = await activePage.waitForSelector(
                 'span[data-icon="send"]',
-                {
-                  timeout: 10000,
-                }
+                { timeout: 10000 }
               );
               await sendBtn.click();
               console.log(`📎 File sent to ${phone}.......`);
             } catch {
-              // ⌨️ Fallback: Press Enter if send button is not found
-              await page.keyboard.press("Enter");
+              await activePage.keyboard.press("Enter");
               console.log(`🔄 File sent to ${phone} using Enter key fallback`);
             }
           } catch (err) {
@@ -151,6 +164,10 @@ const MessageSend = async (req, res) => {
         }
 
         processed.push({ phone, status: "sent" });
+
+        if (waPage) {
+          await waPage.close(); // cleanup
+        }
       } catch (err) {
         console.log(`❌ Failed for ${phone}: ${err.message}`);
         processed.push({ phone, status: "error" });
@@ -158,6 +175,7 @@ const MessageSend = async (req, res) => {
 
       await sleep(5000); // delay between contacts
     }
+
 
     // Save report
     const report = processed.map((p) => `${p.phone},${p.status}`).join("\n");
