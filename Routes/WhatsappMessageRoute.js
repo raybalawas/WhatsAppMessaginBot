@@ -1,8 +1,27 @@
 import e from "express";
-import { MessageDone } from "../Controllers/WhatsappMessageController.js";
+import multer from "multer";
+import puppeteer from "puppeteer";
+import fs from "fs";
+import csv from "csv-parser";
+
+import {
+  MessageDone,
+  MessageSend,
+} from "../Controllers/WhatsappMessageController.js";
 
 const router = e.Router();
 
+// Configure Multer storage (files go in ./uploads folder)
+const upload = multer({ dest: "uploads/" });
+
+router.post(
+  "/whatsapp-message-send",
+  upload.fields([
+    { name: "csvfile", maxCount: 1 },
+    { name: "design", maxCount: 1 },
+  ]),
+  MessageSend
+);
 router.get("/whatsapp-messages-done-list", MessageDone);
 
 export default router;
