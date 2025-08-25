@@ -130,26 +130,23 @@ const MessageSend = async (req, res) => {
             });
             await fileInput.uploadFile(anyDesignFile);
 
-            const sendBtn = await page.waitForSelector(
-              'span[data-icon="plus-rounded"]',
-              {
-                timeout: 5000,
-              }
-            );
-            await sendBtn.click();
-
-            console.log(`📎 File sent to ${phone}.......`);
-
+            // ✅ Now wait for the real send button after attaching
+            try {
+              const sendBtn = await page.waitForSelector(
+                'span[data-icon="send"]',
+                {
+                  timeout: 10000,
+                }
+              );
+              await sendBtn.click();
+              console.log(`📎 File sent to ${phone}.......`);
+            } catch {
+              // ⌨️ Fallback: Press Enter if send button is not found
+              await page.keyboard.press("Enter");
+              console.log(`🔄 File sent to ${phone} using Enter key fallback`);
+            }
           } catch (err) {
             console.log(`❌ Failed to send file to ${phone}: ${err.message}`);
-
-            // ⌨️ Press Enter key as fallback
-            try {
-              await page.keyboard.press("Enter");
-              console.log(`🔄 Pressed Enter key for ${phone}`);
-            } catch (kbErr) {
-              console.log(`⚠️ Could not press Enter: ${kbErr.message}`);
-            }
           }
         }
 
