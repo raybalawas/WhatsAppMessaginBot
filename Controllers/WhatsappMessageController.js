@@ -83,11 +83,13 @@ const MessageSend = async (req, res) => {
           await searchBox.type(formattedPhone, { delay: 100 });
           await sleep(3000);
           const firstResult = await page.$('div[role="gridcell"]');
-          if (firstResult) {
-            await firstResult.click();
-            chatOpened = true;
-            console.log(`🔍 Found ${phone} in search`);
+          if (!firstResult) {
+            continue; // ✅ skip to next number
           }
+
+          await firstResult.click();
+          chatOpened = true;
+          console.log(`🔍 Found ${phone} in search`);
         } catch {
           console.log(`❌ Not found in contacts: ${phone}`);
         }
@@ -174,7 +176,6 @@ const MessageSend = async (req, res) => {
 
       await sleep(5000); // delay between contacts
     }
-
 
     // Save report
     const report = processed.map((p) => `${p.phone},${p.status}`).join("\n");
