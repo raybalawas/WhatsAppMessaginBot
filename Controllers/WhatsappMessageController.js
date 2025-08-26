@@ -82,7 +82,6 @@ const MessageSend = async (req, res) => {
           await page.keyboard.press("Backspace");
           await searchBox.type(formattedPhone, { delay: 100 });
           await sleep(3000);
-
           const firstResult = await page.$('div[role="gridcell"]');
           if (firstResult) {
             await firstResult.click();
