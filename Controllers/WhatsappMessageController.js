@@ -3,6 +3,60 @@ import fs from "fs";
 import csv from "csv-parser";
 import messageModel from "../models/MessageModel.js";
 import VerifiedNumber from "../models/verifiedNumber.js";
+import { send } from "process";
+let browserInstance = null;
+
+async function getBrowser() {
+  try {
+    // 1. If browser instance exists & still connected → reuse
+    if (browserInstance && browserInstance.isConnected()) {
+      const pages = await browserInstance.pages();
+      if (pages.length) {
+        for (const p of pages) {
+          const url = p.url();
+          if (url.includes("web.whatsapp.com")) {
+            console.log("🔄 Reusing existing WhatsApp page.");
+            return browserInstance;
+          }
+        }
+      }
+      return browserInstance;
+    }
+
+    // 2. Otherwise → launch new browser
+    browserInstance = await puppeteer.launch({
+      executablePath:
+        "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
+      headless: false,
+      userDataDir: "./whatsapp-session", // keeps QR session alive
+      defaultViewport: null,
+      args: ["--start-maximized"],
+    });
+
+    console.log("✅ Puppeteer launched (new instance).");
+    return browserInstance;
+  } catch (err) {
+    console.log("❌ getBrowser error:", err.message);
+    return null;
+  }
+}
+
+async function getWhatsappPage(browser) {
+  // Reuse WhatsApp tab if already open
+  const pages = await browser.pages();
+  for (const page of pages) {
+    if (page.url().includes("web.whatsapp.com")) {
+      return page;
+    }
+  }
+
+  // Otherwise → open new WhatsApp tab
+  const page = await browser.newPage();
+  await page.goto("https://web.whatsapp.com");
+  console.log("🌐 Opened WhatsApp Web (new tab).");
+  await sleep(8000);
+  return page;
+}
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -32,14 +86,6 @@ const parseCsv = (csvPath) =>
       .on("end", () => resolve(numbers))
       .on("error", reject);
   });
-
-/**
- * Just to test API is alive
- */
-const MessageDone = async (req, res) => {
-  console.log("working");
-  return res.json({ Message: "working" });
-};
 
 /**
  * Random wait to mimic human behaviour
@@ -91,17 +137,15 @@ const MessageSend = async (req, res) => {
         .json({ status: "error", message: "No numbers in CSV." });
     }
 
-    // Launch browser with saved session
-    const browser = await puppeteer.launch({
-      executablePath:
-        "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
-      headless: false,
-      userDataDir: "./whatsapp-session",
-      defaultViewport: null,
-      args: ["--start-maximized"],
-    });
+    // ✅ Get or reuse browser
+    const browser = await getBrowser();
+    if (!browser) {
+      return res
+        .status(500)
+        .json({ status: "error", message: "Browser not available" });
+    }
 
-    const page = await browser.newPage();
+    const page = await getWhatsappPage(browser);
     await page.goto("https://web.whatsapp.com");
     console.log("✅ Using saved session. Scan QR if first time.");
     await sleep(20000); // wait for QR / sync
@@ -137,7 +181,15 @@ const MessageSend = async (req, res) => {
 
         // Focus + send
         await inputBox.click();
-        await page.keyboard.press("Enter");
+        const sendButton = await page.waitForSelector(
+          'button[data-tab="11"][aria-label="Send"]',
+          {
+            timeout: 10000,
+          }
+        );
+
+        await page.click('button[data-tab="11"][aria-label="Send"]');
+        // await page.keyboard.press("Enter");
         console.log(`✅ Message sent to ${phone}`);
 
         // If file attached
@@ -195,4 +247,107 @@ const MessageSend = async (req, res) => {
   }
 };
 
-export { MessageDone, MessageSend };
+const OTPSend = async (req, res) => {
+  try {
+    const { whatsappNumber, otp, message } = req.body;
+
+    if (!whatsappNumber || !otp || !message) {
+      return res.status(400).json({
+        status: "error",
+        message: "whatsappNumber, otp & message  required.",
+      });
+    }
+
+    // Format number
+    const fullNumber = /*formatPhone(whatsappNumber) ??*/ whatsappNumber;
+
+    // Replace placeholder with OTP (if present in message)
+    const finalMessage = message.includes("{otp}")
+      ? message.replace("{otp}", otp)
+      : `${message} ${otp}`;
+
+    // ✅ Get or reuse browser
+    const browser = await getBrowser();
+    if (!browser) {
+      return res
+        .status(500)
+        .json({ status: "error", message: "Browser not available" });
+    }
+
+    const page = await getWhatsappPage(browser);
+    await page.goto("https://web.whatsapp.com");
+    console.log("✅ Using saved session. Scan QR if first time.");
+    await sleep(15000); // wait for sync if needed
+
+    const processed = [];
+
+    try {
+      console.log(`🔍 Sending OTP to ${fullNumber}...`);
+
+      // Open chat with prefilled text
+      await page.goto(
+        `https://web.whatsapp.com/send?phone=${fullNumber}&text=${encodeURIComponent(
+          finalMessage
+        )}`,
+        { waitUntil: "domcontentloaded" }
+      );
+
+      // Wait for chat input
+      const inputBox = await page.waitForSelector(
+        'div[contenteditable="true"]',
+        { visible: true, timeout: 30000 }
+      );
+
+      // Focus and send
+      await inputBox.click();
+      const sendButton = await page.waitForSelector(
+        'button[data-tab="11"][aria-label="Send"]',
+        {
+          timeout: 10000,
+        }
+      );
+      if (!sendButton) {
+        console.log(`❌ Send button not found for ${fullNumber}`);
+        throw new Error("Send button not found");
+      }
+      await page.click('button[data-tab="11"][aria-label="Send"]');
+
+      // await page.keyboard.press("Enter");
+
+      console.log(`✅ OTP sent to ${fullNumber}`);
+      processed.push({ phone: fullNumber, status: "sent" });
+
+      await randomSleep();
+    } catch (err) {
+      console.log(`❌ Error for ${fullNumber}: ${err.message}`);
+      processed.push({ phone: fullNumber, status: "error" });
+    }
+
+    // Save results to CSV (append instead of overwrite)
+    fs.appendFileSync(
+      "processed_OTP_numbers.csv",
+      processed.map((p) => `${p.phone},${p.status}\n`).join(""),
+      "utf8"
+    );
+
+    return res.json({
+      status: "success",
+      message: "OTP send attempt finished",
+      total: processed.length,
+      sent: processed.filter((p) => p.status === "sent").length,
+      failed: processed.filter((p) => p.status === "error").length,
+    });
+  } catch (error) {
+    console.error("Error in OTPSend:", error);
+    return res.status(500).json({ status: "error", message: "Server Error" });
+  }
+};
+
+/**
+ * Just to test API is alive
+ */
+const MessageDone = async (req, res) => {
+  console.log("working");
+  return res.json({ Message: "working" });
+};
+export { MessageDone, MessageSend, OTPSend };

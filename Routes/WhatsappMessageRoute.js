@@ -7,6 +7,7 @@ import csv from "csv-parser";
 import {
   MessageDone,
   MessageSend,
+  OTPSend,
 } from "../Controllers/WhatsappMessageController.js";
 
 const router = e.Router();
@@ -22,6 +23,7 @@ router.post(
   ]),
   MessageSend
 );
+router.post("/whatsapp-otp-verify", OTPSend);
 router.get("/whatsapp-messages-done-list", MessageDone);
 
 export default router;
