@@ -187,7 +187,10 @@ const MessageSend = async (req, res) => {
             timeout: 10000,
           }
         );
-
+        if (!sendButton) {
+          console.log(`❌ Send button not found for ${phone}`);
+          throw new Error("Send button not found");
+        }
         await page.click('button[data-tab="11"][aria-label="Send"]');
         // await page.keyboard.press("Enter");
         console.log(`✅ Message sent to ${phone}`);
@@ -231,6 +234,12 @@ const MessageSend = async (req, res) => {
         .join("\n")}`,
       "utf8"
     );
+
+    if (processed.length === rawPhones.length) {
+      console.log("🎉 All done! now you can shut down or close the browser");
+      await browser.close();
+      browserInstance = null;
+    }
 
     return res.json({
       status: "success",
@@ -350,4 +359,5 @@ const MessageDone = async (req, res) => {
   console.log("working");
   return res.json({ Message: "working" });
 };
+
 export { MessageDone, MessageSend, OTPSend };
