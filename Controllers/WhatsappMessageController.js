@@ -3,7 +3,6 @@ import fs from "fs";
 import csv from "csv-parser";
 import messageModel from "../models/MessageModel.js";
 import VerifiedNumber from "../models/verifiedNumber.js";
-import { send } from "process";
 let browserInstance = null;
 
 async function getBrowser() {
