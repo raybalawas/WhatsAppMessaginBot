@@ -114,17 +114,29 @@ const MessageSend = async (req, res) => {
     const csvFilePath = req.files?.csvfile?.[0]?.path || null;
     const anyDesignFile = req.files?.design?.[0]?.path || null;
 
-    if (!message || !csvFilePath) {
-      return res
-        .status(400)
-        .json({ status: "error", message: "message & csvfile required." });
+    let csvUrl = null;
+    let designUrl = null;
+    // ✅ Upload CSV to Cloudinary
+    if (csvFilePath) {
+      const uploadCsv = await cloudinary.uploader.upload(csvFilePath, {
+        folder: "whatsapp_csv",
+        resource_type: "raw",
+      });
+      csvUrl = uploadCsv.secure_url;
     }
-
-    // Save in DB
+    // ✅ Upload Design File (image/pdf/video)
+    if (anyDesignFile) {
+      const uploadDesign = await cloudinary.uploader.upload(anyDesignFile, {
+        folder: "whatsapp_designs",
+        resource_type: "auto", // auto detects image/video/pdf
+      });
+      designUrl = uploadDesign.secure_url;
+    }
+    // ✅ Save in DB (MongoDB Atlas)
     const saved = await messageModel.create({
       message,
-      csvFilePath,
-      anyDesignFile,
+      csvFilePath: csvUrl, // now stores URL, not local path
+      anyDesignFile: designUrl,
     });
 
     // Parse CSV
