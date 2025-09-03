@@ -1,3 +1,16 @@
+# Ignore dependencies
+node_modules/
+
+# Ignore environment files
 .env
-node_modules
-whatsapp-session
+
+# Ignore build files
+dist/
+build/
+
+# Ignore WhatsApp session data
+whatsapp-sessions/
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
