@@ -2,6 +2,8 @@ import puppeteer from "puppeteer";
 import fs from "fs";
 import csv from "csv-parser";
 import messageModel from "../models/MessageModel.js";
+import cloudinary from "../utils/cloudinary.js";
+
 let browserInstance = null;
 
 async function getBrowser() {
@@ -135,8 +137,8 @@ const MessageSend = async (req, res) => {
     // ✅ Save in DB (MongoDB Atlas)
     const saved = await messageModel.create({
       message,
-      csvFilePath: csvUrl, // now stores URL, not local path
-      anyDesignFile: designUrl,
+      csvFilePath: csvUrl || "N/A", // now stores URL, not local path
+      anyDesignFile: designUrl || "N/A",
     });
 
     // Parse CSV
@@ -202,8 +204,10 @@ const MessageSend = async (req, res) => {
           throw new Error("Send button not found");
         }
         await page.click('button[data-tab="11"][aria-label="Send"]');
+        // Wait for the last message bubble to appear (your message)
+        await page.waitForSelector("div.message-out", { timeout: 10000 });
         // await page.keyboard.press("Enter");
-        console.log(`✅ Message sent to ${phone}`);
+        console.log(`✅ Confirmed: Message sent to ${phone}`);
 
         // If file attached
         if (anyDesignFile) {
