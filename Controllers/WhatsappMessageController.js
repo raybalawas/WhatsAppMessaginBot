@@ -110,8 +110,6 @@ const formatPhone = (phone) => {
 /**
  * Send WhatsApp Messages
  */
-
-/*
 const MessageSend = async (req, res) => {
   try {
     const message = req.body?.message?.trim();
@@ -270,7 +268,7 @@ const MessageSend = async (req, res) => {
     console.error("Error sending message:", error);
     return res.status(500).json({ status: "error", message: "Server Error" });
   }
-};*/
+};
 
 const OTPSend = async (req, res) => {
   try {
@@ -369,11 +367,11 @@ const OTPSend = async (req, res) => {
 };
 
 /**
- * Just to test API is alivedsf
+ * Just to test API is alive
  */
 const MessageDone = async (req, res) => {
   console.log("working");
   return res.json({ Message: "working" });
 };
 
-export { MessageDone, OTPSend };
+export { MessageDone, MessageSend, OTPSend };
