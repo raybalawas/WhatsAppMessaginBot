@@ -367,7 +367,7 @@ const OTPSend = async (req, res) => {
 };
 
 /**
- * Just to test API is alive
+ * Just to test API is alivedsf
  */
 const MessageDone = async (req, res) => {
   console.log("working");
