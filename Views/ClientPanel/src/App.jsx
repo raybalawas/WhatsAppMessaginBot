@@ -5,10 +5,9 @@ import Footer from "./layout/Footer.jsx";
 
 function App() {
   return (
-    <div>
+    <div className="App">
       <Navbar />
       <Home />
-
       <Footer />
     </div>
   );

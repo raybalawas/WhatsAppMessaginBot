@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import "./styles/Navbar.css";
 import logo from "../assets/zerfinislogo.png";
-import { Link } from "react-router-dom";
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -40,10 +39,8 @@ function Navbar() {
       </div>
       {/* Buttons inside dropdown on mobile */}
       <div className="navbar-actions">
-        <button className="login-btn">Login</button>
-        <Link to="/signup">
+          <button className="login-btn">Login</button>
           <button className="signup-btn">Sign Up</button>
-        </Link>
       </div>
     </nav>
   );
