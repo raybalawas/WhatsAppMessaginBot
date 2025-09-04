@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import "./styles/Navbar.css";
 import logo from "../assets/zerfinislogo.png";
 
@@ -9,7 +10,9 @@ function Navbar() {
     <nav className="navbar">
       {/* Left Logo */}
       <div className="navbar-logo">
+        <Link to="/">
         <img src={logo} alt="Zerfinis Pvt Ltd" />
+        </Link>
       </div>
 
       {/* Hamburger icon for mobile */}
@@ -39,8 +42,12 @@ function Navbar() {
       </div>
       {/* Buttons inside dropdown on mobile */}
       <div className="navbar-actions">
+        {/* <Link to="/login"> */}
           <button className="login-btn">Login</button>
+        {/* </Link> */}
+        <Link to="/signup">
           <button className="signup-btn">Sign Up</button>
+        </Link>
       </div>
     </nav>
   );

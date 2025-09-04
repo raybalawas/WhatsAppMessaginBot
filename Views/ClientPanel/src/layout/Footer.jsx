@@ -13,19 +13,19 @@ function Footer() {
 
         {/* Middle Section */}
         <div className="footer-links">
-          <h3>Quick Links</h3>
+          <h3>Social Links</h3>
           <ul>
             <li>
-              <a href="#">Dashboard</a>
+              <a href="#">LinkdIn</a>
             </li>
             <li>
-              <a href="#">Campaigns</a>
+              <a href="#">Instagram</a>
             </li>
             <li>
-              <a href="#">Reports</a>
+              <a href="#">Threads</a>
             </li>
             <li>
-              <a href="#">Pricing</a>
+              <a href="#">Twitter</a>
             </li>
             <li>
               <a href="#">Support</a>
@@ -36,22 +36,18 @@ function Footer() {
         {/* Right Section */}
         <div className="footer-contact">
           <h3>Contact Us</h3>
-          <p>Email: zerfinispvtltd@gmail.com</p>
-          <p>Phone: +91 8949540232</p>
-          <div className="social-icons">
-            <a href="#">
-              <i className="fab fa-facebook"></i>
+          <p>
+            Email:{" "}
+            <a href="mailto:zerfinispvtltd@gmail.com">
+              zerfinispvtltd@gmail.com
             </a>
-            <a href="#">
-              <i className="fab fa-twitter"></i>
+          </p>
+          <p>
+            Phone:{" "}
+            <a href="tel:+918949540232">
+              +91 8949540232
             </a>
-            <a href="#">
-              <i className="fab fa-linkedin"></i>
-            </a>
-            <a href="#">
-              <i className="fab fa-instagram"></i>
-            </a>
-          </div>
+          </p>
         </div>
       </div>
 
