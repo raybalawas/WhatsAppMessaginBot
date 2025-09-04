@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "./styles/Navbar.css";
 import logo from "../assets/zerfinislogo.png";
+import { Link } from "react-router-dom";
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -36,12 +37,13 @@ function Navbar() {
             <a href="#">Settings</a>
           </li>
         </ul>
-
-        {/* Buttons inside dropdown on mobile */}
-        <div className="navbar-actions">
-          <button className="login-btn">Login</button>
+      </div>
+      {/* Buttons inside dropdown on mobile */}
+      <div className="navbar-actions">
+        <button className="login-btn">Login</button>
+        <Link to="/signup">
           <button className="signup-btn">Sign Up</button>
-        </div>
+        </Link>
       </div>
     </nav>
   );
