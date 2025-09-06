@@ -11,7 +11,7 @@ function Navbar() {
       {/* Left Logo */}
       <div className="navbar-logo">
         <Link to="/">
-        <img src={logo} alt="Zerfinis Pvt Ltd" />
+          <img src={logo} alt="Zerfinis Pvt Ltd" />
         </Link>
       </div>
 
@@ -27,7 +27,7 @@ function Navbar() {
             <a href="#">Dashboard</a>
           </li>
           <li>
-            <a href="#">Campaigns</a>
+            <a href="/campaign">Campaigns</a>
           </li>
           <li>
             <a href="#">Status</a>
@@ -43,7 +43,7 @@ function Navbar() {
       {/* Buttons inside dropdown on mobile */}
       <div className="navbar-actions">
         {/* <Link to="/login"> */}
-          <button className="login-btn">Login</button>
+        <button className="login-btn">Login</button>
         {/* </Link> */}
         <Link to="/signup">
           <button className="signup-btn">Sign Up</button>

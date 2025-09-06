@@ -94,7 +94,7 @@
 /* Offer Section */
 /* ============================= */
 .offers {
-  background-color: #f8f9fa;
+  background-color: #5981f2;
   padding: 50px 20px;
   border-radius: 0;     /* remove curve */
   margin-top: 60px;
@@ -156,7 +156,7 @@
 .subscription-plans {
   margin: 60px 0;
   padding: 50px 20px;
-  background: #f8f9fa;
+  background: #5981f2;
   border-radius: 12px;
 }
 
@@ -228,5 +228,122 @@
 /* Highlight popular plan */
 .plan-card.popular {
   border: 2px solid #0d6efd;
+  transform: scale(1.05);
+}
+
+
+
+
+/* Fonts */
+body, .home-container {
+  font-family: 'Poppins', sans-serif;
+  color: #212529;
+  background-color: #f9fbfd;
+}
+
+/* Hero Section */
+.hero {
+  background: linear-gradient(135deg, #0d6efd, #5981f2);
+  color: white;
+  padding: 90px 20px;
+}
+
+.hero h1 {
+  font-size: 3rem;
+  font-weight: 700;
+}
+
+.cta-btn {
+  background: #ff6f61;
+  color: #fff;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease-in-out;
+}
+
+.cta-btn:hover {
+  background: #e65a50;
+  transform: scale(1.05);
+}
+
+/* Feature Cards */
+.feature-card {
+  background: #fff;
+  padding: 25px;
+  border-radius: 16px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+  text-align: center;
+  transition: all 0.3s ease-in-out;
+}
+
+.feature-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+
+.feature-card h3 {
+  color: #0d6efd;
+  font-weight: 600;
+}
+
+/* Subscription Plans */
+.subscription-plans {
+  background: #fff;
+  padding: 60px 20px;
+}
+
+.plan-card {
+  background: #fdfdfd;
+  border: 1px solid #e5e9f2;
+  padding: 30px;
+  border-radius: 16px;
+  transition: 0.3s;
+}
+
+.plan-card:hover {
+  transform: translateY(-6px);
+  border-color: #0d6efd;
+}
+
+.plan-card.popular {
+  border: 2px solid #0d6efd;
+  background: #eaf1ff;
+  position: relative;
+}
+
+.plan-card.popular::before {
+  content: "Most Popular";
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #0d6efd;
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+}
+
+/* Offers */
+.offers {
+  background: linear-gradient(135deg, #ff9800, #ffc107);
+  color: #fff;
+  padding: 60px 20px;
+}
+
+.offers h2 {
+  font-weight: 700;
+}
+
+.offers .cta-btn {
+  background: #fff;
+  color: #ff6f61;
+}
+
+.offers .cta-btn:hover {
+  background: #f9f9f9;
   transform: scale(1.05);
 }
