@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./styles/Signup.css";
+import { SIGNUP_ENDPOINT } from "../../../../utils/apiConfig.js";
 
 function Signup() {
   const [formData, setFormData] = useState({
@@ -14,10 +15,29 @@ function Signup() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Signup Data:", formData);
-    // TODO: Send data to backend API (Express + MongoDB)
+
+    try {
+      const res = await fetch(SIGNUP_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        console.log("Success:", data.message);
+        alert("Registration successful!");
+      } else {
+        console.error("Error:", data.message);
+        alert(`Error: ${data.message}`);
+      }
+    } catch (error) {
+      console.error("Network error:", error);
+      alert("Something went wrong. Please try again later.");
+    }
   };
 
   return (
@@ -92,7 +112,7 @@ function Signup() {
         </form>
 
         <p className="signup-footer">
-          Already have an account? <a href="/login">Login here</a>
+          Already have an account? <a href="/signin">Login here</a>
         </p>
       </div>
     </div>

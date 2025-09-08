@@ -1,0 +1,89 @@
+/* Signin Container */
+.signin-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f9fa;
+  padding: 20px;
+  width: 100vw;
+}
+
+/* Card */
+.signin-card {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0px 6px 18px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  max-width: 420px;
+}
+
+/* Title */
+.signin-title {
+  text-align: center;
+  color: #0d6efd;
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+}
+
+/* Form */
+.signin-form .form-group {
+  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+}
+
+.signin-form label {
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.signin-form input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  outline: none;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+}
+
+.signin-form input:focus {
+  border-color: #0d6efd;
+}
+
+/* Button */
+.signin-btn {
+  width: 100%;
+  padding: 10px;
+  background: #0d6efd;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.signin-btn:hover {
+  background: #084298;
+}
+
+/* Footer */
+.signin-footer {
+  text-align: center;
+  margin-top: 15px;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.signin-footer a {
+  color: #ffdd57;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.signin-footer a:hover {
+  text-decoration: underline;
+}

@@ -1,0 +1,131 @@
+.settings-container {
+  width: 95%;
+  max-width: 900px;   /* don’t stretch too much */
+  margin: 80px auto;  /* centers on all devices */
+  padding: 20px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Title */
+.settings-container h1 {
+  text-align: center;
+  margin-bottom: 24px;
+  color: #1e3a8a;
+  font-size: 24px;
+}
+
+/* Form */
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.settings-section {
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f9fafb;
+}
+
+.settings-section h2 {
+  margin-bottom: 12px;
+  font-size: 18px;
+  color: #2563eb;
+}
+
+.settings-section label {
+  display: block;
+  margin-bottom: 12px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.settings-section input[type="text"],
+.settings-section input[type="email"],
+.settings-section input[type="password"] {
+  width: 95%;
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  margin-top: 6px;
+  font-size: 14px;
+}
+
+.settings-section input:focus {
+  border-color: #2563eb;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
+}
+
+/* Checkbox */
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+/* Save button */
+.save-btn {
+  background: #2563eb;
+  color: white;
+  padding: 12px 18px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.2s ease;
+  width: 100%; /* Full width on mobile */
+}
+
+.save-btn:hover {
+  background: #1d4ed8;
+  transform: scale(1.02);
+}
+
+/* -------- RESPONSIVE BREAKPOINTS -------- */
+
+/* Small devices (phones) */
+@media (max-width: 600px) {
+  .settings-container {
+    margin: 60px auto;
+    padding: 15px;
+  }
+
+  .settings-container h1 {
+    font-size: 20px;
+  }
+
+  .settings-section h2 {
+    font-size: 16px;
+  }
+
+  .save-btn {
+    font-size: 14px;
+    padding: 10px;
+  }
+}
+
+/* Medium devices (tablets) */
+@media (min-width: 601px) and (max-width: 992px) {
+  .settings-container {
+    width: 90%;
+  }
+}
+/* Large devices (desktops) */
+@media (min-width: 993px) {
+  .settings-container {
+    width: 70%;
+  }
+}
+/* Extra large devices (large desktops) */
+@media (min-width: 1200px) {
+  .settings-container {
+    width: 60%;
+  }
+}

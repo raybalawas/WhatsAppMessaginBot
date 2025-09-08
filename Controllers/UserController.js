@@ -37,36 +37,102 @@ const Signup = async (req, res) => {
   }
 };
 
+// const Signin = async (req, res) => {
+//   try {
+//     const { userName, email, mobile, password } = req.body;
+//     if ((!userName && !email && !mobile) || !password) {
+//       console.log("Provide username OR email OR mobile along with password!");
+//       return errorResponse(
+//         res,
+//         "Provide username OR email OR mobile along with password!",
+//         400
+//       );
+//     }
+
+//     const AuthUser = await userModel.findOne({
+//       $or: [
+//         userName ? { userName } : undefined,
+//         email ? { email } : undefined,
+//         mobile ? { mobile } : undefined,
+//       ].filter(Boolean),
+//     });
+//     if (!AuthUser) {
+//       console.log("User not existing");
+//       return errorResponse(
+//         res,
+//         "User does not exist in our database Signup first"
+//       );
+//     }
+//     const comparepass = await bcrypt.compare(password, AuthUser.password);
+//     if (!comparepass) {
+//       console.log(`Password does not mathc!`);
+//       return errorResponse(res, "password does not matched!", 400);
+//     }
+
+//     const token = JWT.sign(
+//       { id: AuthUser._id, role: AuthUser.role },
+//       process.env.JWT_SECRET,
+//       { expiresIn: process.env.JWT_EXPIRY }
+//     );
+
+//     if (AuthUser.status == 0 && AuthUser.role == 0) {
+//       console.log(`Your status is inactive yet! contact Admin`);
+//       return errorResponse(res, "Status is Inactive yet!", 400);
+//     }
+
+//     if (AuthUser.role == 1) {
+//       console.log(`Admin logged in successfully`);
+//       return successResponse(res, "Admin Logged in successfully!", {
+//         user: AuthUser,
+//         token: token,
+//       });
+//     } else if (AuthUser.role == 0) {
+//       console.log(`User logged in successfully`);
+//       return successResponse(res, "User Logged in successfully!", {
+//         user: AuthUser,
+//         token: token,
+//       });
+//     } else {
+//       console.log(`Invalid role access`);
+//       return errorResponse(res, "Invalid role access", 400);
+//     }
+//   } catch (error) {
+//     console.log(error);
+//     return errorResponse(res, "Server Error");
+//   }
+// };
+
 const Signin = async (req, res) => {
   try {
-    const { userName, email, mobile, password } = req.body;
-    if ((!userName && !email && !mobile) || !password) {
-      console.log("Provide username OR email OR mobile along with password!");
+    const { identifier, password } = req.body;
+
+    if (!identifier || !password) {
+      return errorResponse(res, "Identifier and password are required", 400);
+    }
+
+    const query = {
+      $or: [{ userName: identifier }, { email: identifier }],
+    };
+
+    // Check if identifier is numeric, then search mobile
+    if (!isNaN(identifier)) {
+      query.$or.push({ mobile: Number(identifier) });
+    }
+
+    const AuthUser = await userModel.findOne(query);
+
+    if (!AuthUser) {
       return errorResponse(
         res,
-        "Provide username OR email OR mobile along with password!",
+        "User does not exist. Please signup first.",
         400
       );
     }
 
-    const AuthUser = await userModel.findOne({
-      $or: [
-        userName ? { userName } : undefined,
-        email ? { email } : undefined,
-        mobile ? { mobile } : undefined,
-      ].filter(Boolean),
-    });
-    if (!AuthUser) {
-      console.log("User not existing");
-      return errorResponse(
-        res,
-        "User does not exist in our database Signup first"
-      );
-    }
     const comparepass = await bcrypt.compare(password, AuthUser.password);
+
     if (!comparepass) {
-      console.log(`Password does not mathc!`);
-      return errorResponse(res, "password does not matched!", 400);
+      return errorResponse(res, "Incorrect password!", 400);
     }
 
     const token = JWT.sign(
@@ -75,29 +141,20 @@ const Signin = async (req, res) => {
       { expiresIn: process.env.JWT_EXPIRY }
     );
 
-    if (AuthUser.status == 0 && AuthUser.role == 0) {
-      console.log(`Your status is inactive yet! contact Admin`);
-      return errorResponse(res, "Status is Inactive yet!", 400);
+    if (AuthUser.status === 0 && AuthUser.role === 0) {
+      return errorResponse(
+        res,
+        "Your account is inactive! Contact admin.",
+        400
+      );
     }
 
-    if (AuthUser.role == 1) {
-      console.log(`Admin logged in successfully`);
-      return successResponse(res, "Admin Logged in successfully!", {
-        user: AuthUser,
-        token: token,
-      });
-    } else if (AuthUser.role == 0) {
-      console.log(`User logged in successfully`);
-      return successResponse(res, "User Logged in successfully!", {
-        user: AuthUser,
-        token: token,
-      });
-    } else {
-      console.log(`Invalid role access`);
-      return errorResponse(res, "Invalid role access", 400);
-    }
+    return successResponse(res, "Login successful!", {
+      user: AuthUser,
+      token: token,
+    });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return errorResponse(res, "Server Error");
   }
 };
