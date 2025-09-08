@@ -161,7 +161,7 @@ const Signin = async (req, res) => {
 
 const UserList = async (req, res) => {
   try {
-    const users = await userModel.find({ role: 0 });
+    const users = await userModel.find();
     if (!users) {
       console.log(`users not found`);
       return errorResponse(res, "users not found", 300);

@@ -16,6 +16,7 @@ import Footer from "./layout/Footer.jsx";
   /*Admin Panle url's*/
 }
 import AdminDashboardPage from "./PagesAdmin/AdminDashboardPage.jsx";
+import Clients from "./PagesAdmin/Clients.jsx";
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
 
           {/*Admin Panle url's*/}
           <Route path="/admin-dashboard" element={<AdminDashboardPage />} />
+          <Route path="/admin-userslist" element={<Clients />} />
 
           {/* Catch-all unknown routes */}
           <Route path="*" element={<NotFoundRedirect />} />
