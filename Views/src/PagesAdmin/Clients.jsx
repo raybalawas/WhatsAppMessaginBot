@@ -145,6 +145,7 @@ function Clients() {
                     {user.role === "1" ? "Super Admin" : "User"}
                   </td>
                   <td data-label="Action">
+                    <button className="camp-btn">Campaigns</button>
                     <button
                       className={`status-toggle-btn ${
                         user.status === "1" ? "active" : "inactive"

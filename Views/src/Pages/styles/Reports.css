@@ -6,7 +6,6 @@
   border-radius: 12px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  
 }
 
 .reports-container h1 {
@@ -98,7 +97,7 @@
 }
 
 .edit-btn {
-  background-color: #4CAF50; /* Green */
+  background-color: #4caf50; /* Green */
   color: white;
 }
 
@@ -132,4 +131,15 @@
 .status-toggle-btn.inactive {
   background-color: #dc3545; /* red for inactive */
   color: white;
+}
+
+.camp-btn {
+  background-color: #92400e;
+  color: white;
+  padding: 5px 10px;
+  margin-left: 10px;
+  margin-right: 10px;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
 }
