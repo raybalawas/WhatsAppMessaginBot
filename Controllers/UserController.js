@@ -140,8 +140,8 @@ const Signin = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRY }
     );
-
-    if (AuthUser.status === 0 && AuthUser.role === 0) {
+    
+    if (AuthUser.status === "0" || AuthUser.status === 0) {
       return errorResponse(
         res,
         "Your account is inactive! Contact admin.",
@@ -161,7 +161,7 @@ const Signin = async (req, res) => {
 
 const UserList = async (req, res) => {
   try {
-    const users = await userModel.find();
+    const users = await userModel.find({ role: 0 }).select("-password");
     if (!users) {
       console.log(`users not found`);
       return errorResponse(res, "users not found", 300);
@@ -343,6 +343,7 @@ const userUpdateProfile = async (req, res) => {
     return errorResponse(res, "Something went wrong", 500);
   }
 };
+
 export {
   Signup,
   Signin,

@@ -6,29 +6,25 @@ import cloudinary from "../utils/cloudinary.js";
 
 let browserInstance = null;
 
+/* ---------- Browser Handling ---------- */
 async function getBrowser() {
   try {
-    // 1. If browser instance exists & still connected → reuse
     if (browserInstance && browserInstance.isConnected()) {
       const pages = await browserInstance.pages();
-      if (pages.length) {
-        for (const p of pages) {
-          const url = p.url();
-          if (url.includes("web.whatsapp.com")) {
-            console.log("🔄 Reusing existing WhatsApp page.");
-            return browserInstance;
-          }
+      for (const p of pages) {
+        if (p.url().includes("web.whatsapp.com")) {
+          console.log("🔄 Reusing existing WhatsApp page.");
+          return browserInstance;
         }
       }
       return browserInstance;
     }
 
-    // 2. Otherwise → launch new browser
     browserInstance = await puppeteer.launch({
-      executablePath:
-        "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
+      // executablePath:
+      //   "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe", // Change path for Chrome/Brave if needed
       headless: false,
-      userDataDir: "./whatsapp-session", // keeps QR session alive
+      userDataDir: "./whatsapp-session", // Keeps QR session alive
       defaultViewport: null,
       args: ["--start-maximized"],
     });
@@ -42,15 +38,11 @@ async function getBrowser() {
 }
 
 async function getWhatsappPage(browser) {
-  // Reuse WhatsApp tab if already open
   const pages = await browser.pages();
   for (const page of pages) {
-    if (page.url().includes("web.whatsapp.com")) {
-      return page;
-    }
+    if (page.url().includes("web.whatsapp.com")) return page;
   }
 
-  // Otherwise → open new WhatsApp tab
   const page = await browser.newPage();
   await page.goto("https://web.whatsapp.com");
   console.log("🌐 Opened WhatsApp Web (new tab).");
@@ -58,11 +50,14 @@ async function getWhatsappPage(browser) {
   return page;
 }
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+/* ---------- Helpers ---------- */
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const randomSleep = async (min = 12000, max = 20000) => {
+  const ms = Math.floor(Math.random() * (max - min + 1) + min);
+  console.log(`⏳ Waiting ${ms / 1000}s...`);
+  return sleep(ms);
+};
 
-/**
- * Parse CSV and extract numbers safely
- */
 const parseCsv = (csvPath) =>
   new Promise((resolve, reject) => {
     const numbers = [];
@@ -75,50 +70,38 @@ const parseCsv = (csvPath) =>
           row.mobile ||
           row.number ||
           row.mobile_number;
-
         if (val) {
-          const clean = String(val).replace(/\D/g, ""); // only digits
-          if (clean.length >= 10) {
-            numbers.push(clean);
-          }
+          const clean = String(val).replace(/\D/g, "");
+          if (clean.length >= 10) numbers.push(clean);
         }
       })
       .on("end", () => resolve(numbers))
       .on("error", reject);
   });
 
-/**
- * Random wait to mimic human behaviour
- */
-const randomSleep = async (min = 15000, max = 25000) => {
-  const ms = Math.floor(Math.random() * (max - min + 1) + min);
-  console.log(`⏳ Waiting ${ms / 1000}s...`);
-  return new Promise((resolve) => setTimeout(resolve, ms));
-};
-
-/**
- * Ensure phone number has proper format (India default if 0-prefixed)
- */
 const formatPhone = (phone) => {
   const digits = phone.replace(/\D/g, "");
-  if (digits.startsWith("0")) {
-    return "91" + digits.slice(1);
-  }
+  if (digits.startsWith("0")) return "91" + digits.slice(1); // India default
   return digits;
 };
 
-/**
- * Send WhatsApp Messages
- */
+/* ---------- Message Sender ---------- */
 const MessageSend = async (req, res) => {
   try {
     const message = req.body?.message?.trim();
     const csvFilePath = req.files?.csvfile?.[0]?.path || null;
     const anyDesignFile = req.files?.design?.[0]?.path || null;
 
+    if (!message && !anyDesignFile) {
+      return res
+        .status(400)
+        .json({ status: "error", message: "Message or creative is required" });
+    }
+
+    // Upload files to Cloudinary
     let csvUrl = null;
     let designUrl = null;
-    // ✅ Upload CSV to Cloudinary
+
     if (csvFilePath) {
       const uploadCsv = await cloudinary.uploader.upload(csvFilePath, {
         folder: "whatsapp_csv",
@@ -126,22 +109,22 @@ const MessageSend = async (req, res) => {
       });
       csvUrl = uploadCsv.secure_url;
     }
-    // ✅ Upload Design File (image/pdf/video)
     if (anyDesignFile) {
       const uploadDesign = await cloudinary.uploader.upload(anyDesignFile, {
         folder: "whatsapp_designs",
-        resource_type: "auto", // auto detects image/video/pdf
+        resource_type: "auto",
       });
       designUrl = uploadDesign.secure_url;
     }
-    // ✅ Save in DB (MongoDB Atlas)
+
+    // Save campaign in DB
     const saved = await messageModel.create({
       message,
-      csvFilePath: csvUrl || "N/A", // now stores URL, not local path
+      csvFilePath: csvUrl || "N/A",
       anyDesignFile: designUrl || "N/A",
     });
 
-    // Parse CSV
+    // Parse numbers
     const rawPhones = await parseCsv(csvFilePath);
     if (!rawPhones.length) {
       return res
@@ -149,67 +132,110 @@ const MessageSend = async (req, res) => {
         .json({ status: "error", message: "No numbers in CSV." });
     }
 
-    // ✅ Get or reuse browser
+    // Browser
     const browser = await getBrowser();
-    if (!browser) {
+    if (!browser)
       return res
         .status(500)
         .json({ status: "error", message: "Browser not available" });
-    }
 
     const page = await getWhatsappPage(browser);
     await page.goto("https://web.whatsapp.com");
     console.log("✅ Using saved session. Scan QR if first time.");
-    await sleep(20000); // wait for QR / sync
+    await sleep(20000); // Wait for QR if needed
 
     const processed = [];
 
     for (const rawPhone of rawPhones) {
       const phone = formatPhone(rawPhone);
 
-      // Basic validation
       if (!/^\d{10,15}$/.test(phone)) {
-        console.log(`⚠️ Skipping invalid number: ${rawPhone}`);
+        console.log(`⚠️ Invalid number: ${rawPhone}`);
         processed.push({ phone: rawPhone, status: "invalid" });
         continue;
       }
 
       try {
         console.log(`🔍 Sending to ${phone}...`);
-
-        // Open chat directly
         await page.goto(
           `https://web.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(
             message
           )}`,
-          { waitUntil: "domcontentloaded" }
+          { waitUntil: "domcontentloaded", timeout: 60000 }
         );
 
-        // Wait for chat box
+        // Wait for chat input
         const inputBox = await page.waitForSelector(
           'div[contenteditable="true"]',
-          { visible: true, timeout: 30000 }
-        );
-
-        // Focus + send
-        await inputBox.click();
-        const sendButton = await page.waitForSelector(
-          'button[data-tab="11"][aria-label="Send"]',
           {
-            timeout: 10000,
+            visible: true,
+            timeout: 30000,
           }
         );
-        if (!sendButton) {
-          console.log(`❌ Send button not found for ${phone}`);
-          throw new Error("Send button not found");
-        }
-        await page.click('button[data-tab="11"][aria-label="Send"]');
-        // Wait for the last message bubble to appear (your message)
-        await page.waitForSelector("div.message-out", { timeout: 10000 });
-        // await page.keyboard.press("Enter");
-        console.log(`✅ Confirmed: Message sent to ${phone}`);
 
-        // If file attached
+        // Ensure message is typed
+        await inputBox.click();
+
+        // Retry send button logic
+        let sent = false;
+
+       for (let attempt = 1; attempt <= 3; attempt++) {
+         try {
+           console.log(`🚀 Attempt ${attempt} to send message to ${phone}...`);
+
+           // 1️⃣ Try modern send icon
+           try {
+             const sendIcon = await page.waitForSelector(
+               'span[data-icon="send"]',
+               {
+                 timeout: 5000,
+               }
+             );
+             await sendIcon.click();
+             console.log("✅ Clicked send icon");
+           } catch {
+             console.log("⚠️ Send icon not found, trying fallback...");
+
+             // 2️⃣ Try button with aria-label
+             try {
+               const sendButton = await page.waitForSelector(
+                 'button[data-tab="11"][aria-label="Send"]',
+                 { timeout: 5000 }
+               );
+               await sendButton.click();
+               console.log("✅ Clicked send button (aria-label)");
+             } catch {
+               console.log("⚠️ Send button not found, pressing Enter...");
+
+               // 3️⃣ Final fallback → press Enter
+               await page.keyboard.press("Enter");
+               console.log("✅ Pressed Enter key");
+             }
+           }
+
+           // ✅ Confirm message actually appeared in chat
+           await page.waitForSelector("div.message-out", { timeout: 10000 });
+           console.log(`📩 Message confirmed sent to ${phone}`);
+           sent = true;
+           break;
+         } catch (err) {
+           console.log(
+             `❌ Attempt ${attempt} failed for ${phone}: ${err.message}`
+           );
+           await sleep(2000); // wait before retry
+         }
+       }
+
+       if (!sent) {
+         console.log(`🚨 Failed to send message to ${phone} after 3 retries`);
+         processed.push({ phone, status: "error" });
+       } else {
+         processed.push({ phone, status: "sent" });
+       }
+
+        if (!sent) throw new Error("Send button failed");
+
+        // If file
         if (anyDesignFile) {
           const attachBtn = await page.waitForSelector(
             'span[data-icon="clip"]',
@@ -222,7 +248,7 @@ const MessageSend = async (req, res) => {
           });
           await fileInput.uploadFile(anyDesignFile);
 
-          await sleep(3000); // wait for preview to load
+          await sleep(4000);
           const sendFileBtn = await page.waitForSelector(
             'span[data-icon="send"]',
             { timeout: 10000 }
@@ -249,11 +275,7 @@ const MessageSend = async (req, res) => {
       "utf8"
     );
 
-    if (processed.length === rawPhones.length) {
-      console.log("🎉 All done! now you can shut down or close the browser");
-      await browser.close();
-      browserInstance = null;
-    }
+    console.log("🎉 Campaign finished. Browser left open for next use.");
 
     return res.json({
       status: "success",
@@ -265,7 +287,7 @@ const MessageSend = async (req, res) => {
       failed: processed.filter((p) => p.status === "error").length,
     });
   } catch (error) {
-    console.error("Error sending message:", error);
+    console.error("❌ Error in MessageSend:", error);
     return res.status(500).json({ status: "error", message: "Server Error" });
   }
 };

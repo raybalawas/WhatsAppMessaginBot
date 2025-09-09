@@ -1,3 +1,6 @@
-2025/09/03-10:53:19.711 519c Reusing MANIFEST D:\reactProjects\whatsapp - Copy\whatsapp-session\Default\Local Storage\leveldb/MANIFEST-000001
-2025/09/03-10:53:19.728 519c Recovering log #84
-2025/09/03-10:53:19.763 519c Reusing old log D:\reactProjects\whatsapp - Copy\whatsapp-session\Default\Local Storage\leveldb/000084.log 
+2025/09/09-15:42:44.918 1ef8 Reusing MANIFEST D:\reactProjects\WhatsappBulkCampaign\whatsapp-session\Default\Local Storage\leveldb/MANIFEST-000001
+2025/09/09-15:42:44.975 1ef8 Recovering log #3
+2025/09/09-15:42:45.001 1ef8 Reusing old log D:\reactProjects\WhatsappBulkCampaign\whatsapp-session\Default\Local Storage\leveldb/000003.log 
+2025/09/09-15:44:46.059 47d4 Level-0 table #5: started
+2025/09/09-15:44:46.081 47d4 Level-0 table #5: 20071 bytes OK
+2025/09/09-15:44:46.084 47d4 Delete type=0 #3

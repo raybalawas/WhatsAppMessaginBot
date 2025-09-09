@@ -10,6 +10,17 @@ import WhatsAppRoutes from "./Routes/WhatsappMessageRoute.js";
 
 const app = e();
 app.use(e.json());
+
+app.use(
+  cors({
+    // origin: "http://localhost:5173",
+    origin: "*", // your React app URL
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true, // ✅ allow cookies / auth headers
+  })
+);
+
 app.use(e.urlencoded({ extended: true }));
 app.use(cors());
 app.use(bodyParser.json());

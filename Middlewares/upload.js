@@ -35,8 +35,23 @@ const fileFilter = (req, file, cb) => {
   return cb(new Error("Unexpected field"), false);
 };
 
+// const fileFilter = (req, file, cb) => {
+//   if (file.fieldname === "csvfile") {
+//     return file.originalname.toLowerCase().endsWith(".csv")
+//       ? cb(null, true)
+//       : cb(new Error("Only CSV allowed for csvfile"), false);
+//   }
+//   if (file.fieldname === "design") {
+//     return /\.(pdf|doc|docx|png|jpg|jpeg|mp4)$/i.test(file.originalname)
+//       ? cb(null, true)
+//       : cb(new Error("Invalid design file type"), false);
+//   }
+//   cb(new Error("Unexpected field"), false);
+// };
+
 const upload = multer({
-  storage,
+  storage: storage,
+  // dest:  storage,
   fileFilter,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB per file
 });

@@ -9,9 +9,21 @@ import {
 } from "../Controllers/UserController.js";
 
 import e from "express";
-import { checkAdmin, checkAuth, checkUser } from "../Middlewares/AuthMiddleware.js";
+import {
+  checkAdmin,
+  checkAuth,
+  checkUser,
+} from "../Middlewares/AuthMiddleware.js";
+import {
+  userSubmitCampaign,
+  getAllCampaigns,
+  deleteAllCampaign,
+} from "../Controllers/UserCampaignController.js";
+import multer from "multer";
 
 const router = e.Router();
+// const upload = multer({ dest: "uploads/" }); // temp folder
+import upload from "../Middlewares/upload.js";
 
 router.post("/signup", Signup);
 router.post("/login", Signin);
@@ -20,6 +32,17 @@ router.get("/view/:id", checkAuth, checkAdmin, UserView);
 router.put("/update/:id", checkAuth, checkAdmin, userUpdate);
 router.delete("/delete/:id", checkAuth, checkAdmin, userdelete);
 router.put("/user-profile-update", checkAuth, checkUser, userUpdateProfile);
-
+router.post(
+  "/submit-campaign",
+  checkAuth,
+  checkUser,
+  upload.fields([
+    { name: "csvfile", maxCount: 1 },
+    { name: "design", maxCount: 1 },
+  ]),
+  userSubmitCampaign
+);
+router.get("/get-campaigns", checkAuth, checkAdmin, getAllCampaigns);
+router.delete("/delete-all-campaigns", checkAuth, checkAdmin, deleteAllCampaign);
 
 export default router;
