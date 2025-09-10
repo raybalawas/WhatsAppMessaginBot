@@ -93,7 +93,7 @@ const MessageSend = async (req, res) => {
     const message = req.body?.message?.trim();
     const csvFilePath = req.files?.csvfile?.[0]?.path || null;
     const anyDesignFile = req.files?.design?.[0]?.path || null;
-    const userId = req.params.id;
+   
     if (!message && !anyDesignFile) {
       return res
         .status(400)
@@ -322,8 +322,8 @@ const MessageSend = async (req, res) => {
           </thead>
           <tbody>
             ${processed
-              .map((p) => `<tr><td>${p.phone}</td><td>${p.status}</td></tr>`)
-              .join("")}
+          .map((p) => `<tr><td>${p.phone}</td><td>${p.status}</td></tr>`)
+          .join("")}
           </tbody>
         </table>
       </div>
@@ -348,7 +348,7 @@ const MessageSend = async (req, res) => {
     });
 
     const reportUrl = uploadReport.secure_url;
-
+    const userId = req.params.id;
     await statusModel.create({
       userId,
       message,
