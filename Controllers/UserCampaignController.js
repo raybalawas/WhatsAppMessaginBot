@@ -86,5 +86,35 @@ const deleteAllCampaign = async (req, res) => {
   }
 };
 
+const getCampaignsByUserId = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const camps = await messageModel
+      .find({ userId })
+      .populate("userId", "name email mobile")
+      .sort({_id:-1});
+    console.log(camps);
+    if (!camps || camps.length === 0) {
+      return res.status(400).json({
+        Message: "User has not uploaded a single Campaign yet!",
+        data: [],
+      });
+    }
+    return res.status(200).json({
+      Message: "Campaigns fetched successfully!",
+      Data: camps,
+    });
+  } catch (error) {
+    console.log(`Error while fetching campaigns by user id:${error.message}`);
+    return res.status(500).json({
+      Message: "Server error! try again.",
+    });
+  }
+};
 
-export { userSubmitCampaign, getAllCampaigns, deleteAllCampaign };
+export {
+  userSubmitCampaign,
+  getAllCampaigns,
+  deleteAllCampaign,
+  getCampaignsByUserId,
+};

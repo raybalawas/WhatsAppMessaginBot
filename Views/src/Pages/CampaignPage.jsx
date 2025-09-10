@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./styles/campaign.css";
 import { USER_CAMPAIGN_SUBMIT } from "../../../utils/apiConfig.js";
-import axios from "axios";
+// import axios from "axios";
 
 export default function CampaignPage() {
   const [step, setStep] = useState(1);

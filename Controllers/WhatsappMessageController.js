@@ -3,6 +3,8 @@ import fs from "fs";
 import csv from "csv-parser";
 import messageModel from "../models/MessageModel.js";
 import cloudinary from "../utils/cloudinary.js";
+import path from "path";
+import statusModel from "../models/StatusModel.js";
 
 let browserInstance = null;
 
@@ -91,7 +93,7 @@ const MessageSend = async (req, res) => {
     const message = req.body?.message?.trim();
     const csvFilePath = req.files?.csvfile?.[0]?.path || null;
     const anyDesignFile = req.files?.design?.[0]?.path || null;
-
+    const userId = req.params.id;
     if (!message && !anyDesignFile) {
       return res
         .status(400)
@@ -118,11 +120,11 @@ const MessageSend = async (req, res) => {
     }
 
     // Save campaign in DB
-    const saved = await messageModel.create({
-      message,
-      csvFilePath: csvUrl || "N/A",
-      anyDesignFile: designUrl || "N/A",
-    });
+    // const saved = await messageModel.create({
+    //   message,
+    //   csvFilePath: csvUrl || "N/A",
+    //   anyDesignFile: designUrl || "N/A",
+    // });
 
     // Parse numbers
     const rawPhones = await parseCsv(csvFilePath);
@@ -179,59 +181,59 @@ const MessageSend = async (req, res) => {
         // Retry send button logic
         let sent = false;
 
-       for (let attempt = 1; attempt <= 3; attempt++) {
-         try {
-           console.log(`🚀 Attempt ${attempt} to send message to ${phone}...`);
+        for (let attempt = 1; attempt <= 3; attempt++) {
+          try {
+            console.log(`🚀 Attempt ${attempt} to send message to ${phone}...`);
 
-           // 1️⃣ Try modern send icon
-           try {
-             const sendIcon = await page.waitForSelector(
-               'span[data-icon="send"]',
-               {
-                 timeout: 5000,
-               }
-             );
-             await sendIcon.click();
-             console.log("✅ Clicked send icon");
-           } catch {
-             console.log("⚠️ Send icon not found, trying fallback...");
+            // 1️⃣ Try modern send icon
+            try {
+              const sendIcon = await page.waitForSelector(
+                'span[data-icon="send"]',
+                {
+                  timeout: 5000,
+                }
+              );
+              await sendIcon.click();
+              console.log("✅ Clicked send icon");
+            } catch {
+              console.log("⚠️ Send icon not found, trying fallback...");
 
-             // 2️⃣ Try button with aria-label
-             try {
-               const sendButton = await page.waitForSelector(
-                 'button[data-tab="11"][aria-label="Send"]',
-                 { timeout: 5000 }
-               );
-               await sendButton.click();
-               console.log("✅ Clicked send button (aria-label)");
-             } catch {
-               console.log("⚠️ Send button not found, pressing Enter...");
+              // 2️⃣ Try button with aria-label
+              try {
+                const sendButton = await page.waitForSelector(
+                  'button[data-tab="11"][aria-label="Send"]',
+                  { timeout: 5000 }
+                );
+                await sendButton.click();
+                console.log("✅ Clicked send button (aria-label)");
+              } catch {
+                console.log("⚠️ Send button not found, pressing Enter...");
 
-               // 3️⃣ Final fallback → press Enter
-               await page.keyboard.press("Enter");
-               console.log("✅ Pressed Enter key");
-             }
-           }
+                // 3️⃣ Final fallback → press Enter
+                await page.keyboard.press("Enter");
+                console.log("✅ Pressed Enter key");
+              }
+            }
 
-           // ✅ Confirm message actually appeared in chat
-           await page.waitForSelector("div.message-out", { timeout: 10000 });
-           console.log(`📩 Message confirmed sent to ${phone}`);
-           sent = true;
-           break;
-         } catch (err) {
-           console.log(
-             `❌ Attempt ${attempt} failed for ${phone}: ${err.message}`
-           );
-           await sleep(2000); // wait before retry
-         }
-       }
+            // ✅ Confirm message actually appeared in chat
+            await page.waitForSelector("div.message-out", { timeout: 10000 });
+            console.log(`📩 Message confirmed sent to ${phone}`);
+            sent = true;
+            break;
+          } catch (err) {
+            console.log(
+              `❌ Attempt ${attempt} failed for ${phone}: ${err.message}`
+            );
+            await sleep(2000); // wait before retry
+          }
+        }
 
-       if (!sent) {
-         console.log(`🚨 Failed to send message to ${phone} after 3 retries`);
-         processed.push({ phone, status: "error" });
-       } else {
-         processed.push({ phone, status: "sent" });
-       }
+        if (!sent) {
+          console.log(`🚨 Failed to send message to ${phone} after 3 retries`);
+          processed.push({ phone, status: "error" });
+        } else {
+          processed.push({ phone, status: "sent" });
+        }
 
         if (!sent) throw new Error("Send button failed");
 
@@ -266,21 +268,100 @@ const MessageSend = async (req, res) => {
       }
     }
 
-    // Save results to CSV
+    // Save results to CSV After processing all numbers, instead of writing a raw CSV, dynamically generate an HTML file
+    // fs.writeFileSync(
+    //   "processed_numbers.csv",
+    //   `phone,status\n${processed
+    //     .map((p) => `${p.phone},${p.status}`)
+    //     .join("\n")}`,
+    //   "utf8"
+    // );
+
+    const generateHtmlReport = ({ message, processed, timestamp }) => {
+      const sentCount = processed.filter((p) => p.status === "sent").length;
+      const failedCount = processed.filter((p) => p.status === "error").length;
+      const invalidCount = processed.filter(
+        (p) => p.status === "invalid"
+      ).length;
+
+      return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+      <title>WhatsApp Campaign Summary</title>
+      <style>
+        body { font-family: Arial, sans-serif; background: #ece5dd; margin: 20px; padding: 0; }
+        .container { max-width: 800px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; }
+        h1 { color: #075e54; }
+        .summary { margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; border-bottom: 1px solid #ddd; }
+        th { background: #075e54; color: white; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <h1>WhatsApp Campaign Summary</h1>
+        <div class="summary">
+          <p><strong>Message:</strong> ${message}</p>
+          <p><strong>Date:</strong> ${timestamp}</p>
+          <p><strong>Total Numbers:</strong> ${processed.length}</p>
+          <p><strong>Sent:</strong> ${sentCount}</p>
+          <p><strong>Failed:</strong> ${failedCount}</p>
+          <p><strong>Invalid:</strong> ${invalidCount}</p>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Phone Number</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${processed
+              .map((p) => `<tr><td>${p.phone}</td><td>${p.status}</td></tr>`)
+              .join("")}
+          </tbody>
+        </table>
+      </div>
+    </body>
+    </html>
+  `;
+    };
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const reportFilename = `whatsapp-report-${timestamp}.html`;
+    const reportPath = path.join("uploads", reportFilename);
+
     fs.writeFileSync(
-      "processed_numbers.csv",
-      `phone,status\n${processed
-        .map((p) => `${p.phone},${p.status}`)
-        .join("\n")}`,
+      reportPath,
+      generateHtmlReport({ message, processed, timestamp }),
       "utf8"
     );
 
+    const uploadReport = await cloudinary.uploader.upload(reportPath, {
+      folder: "whatsapp_reports",
+      resource_type: "auto",
+    });
+
+    const reportUrl = uploadReport.secure_url;
+
+    await statusModel.create({
+      userId,
+      message,
+      generatedFile: reportUrl,
+    });
+
+    fs.unlinkSync(reportPath);
     console.log("🎉 Campaign finished. Browser left open for next use.");
 
     return res.json({
       status: "success",
       message: "Processing complete",
-      savedRecordId: saved._id,
+      // savedRecordId: saved._id,
       total: processed.length,
       sent: processed.filter((p) => p.status === "sent").length,
       invalid: processed.filter((p) => p.status === "invalid").length,

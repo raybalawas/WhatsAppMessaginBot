@@ -35,7 +35,11 @@ function Signin() {
         // Store token + user in localStorage
         localStorage.setItem("authToken", data.data.token);
         localStorage.setItem("authUser", JSON.stringify(data.data.user));
-
+        localStorage.setItem("authUserId", data.data.user._id);
+        // console.log(data.data.user._id);
+        // localStorage.setItem("authUserId", data.data._id);
+        // alert("authUserId");
+        // alert(data.user._id);
         // Redirect
         if (data.data.user.role === "1") {
           navigate("/admin-dashboard");
@@ -48,7 +52,6 @@ function Signin() {
       } else {
         setErrorMessage(data.message);
       }
-
     } catch (error) {
       console.error("Signin Error:", error);
       setErrorMessage("Network error. Please try again later.");

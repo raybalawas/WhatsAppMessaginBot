@@ -18,6 +18,7 @@ import {
   userSubmitCampaign,
   getAllCampaigns,
   deleteAllCampaign,
+  getCampaignsByUserId,
 } from "../Controllers/UserCampaignController.js";
 import multer from "multer";
 
@@ -43,6 +44,12 @@ router.post(
   userSubmitCampaign
 );
 router.get("/get-campaigns", checkAuth, checkAdmin, getAllCampaigns);
-router.delete("/delete-all-campaigns", checkAuth, checkAdmin, deleteAllCampaign);
+router.delete(
+  "/delete-all-campaigns",
+  checkAuth,
+  checkAdmin,
+  deleteAllCampaign
+);
+router.get("/get-camp-by-user-id/:id", checkAuth, checkAdmin, getCampaignsByUserId);
 
 export default router;

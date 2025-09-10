@@ -1,3 +1,4 @@
+import messageModel from "../models/MessageModel.js";
 import userModel from "../models/usersModel.js";
 import { successResponse, errorResponse } from "../utils/response.js";
 import bcrypt from "bcrypt";
@@ -140,7 +141,7 @@ const Signin = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRY }
     );
-    
+
     if (AuthUser.status === "0" || AuthUser.status === 0) {
       return errorResponse(
         res,
@@ -161,18 +162,39 @@ const Signin = async (req, res) => {
 
 const UserList = async (req, res) => {
   try {
-    const users = await userModel.find({ role: 0 }).select("-password");
-    if (!users) {
+    const users = await userModel
+      .find({ role: 0 })
+      .select("-password")
+      .sort({ _id: -1 });
+
+    if (!users || users.length === 0) {
       console.log(`users not found`);
       return errorResponse(res, "users not found", 300);
     }
-    console.log(users);
-    return successResponse(res, "Users fetched successfully!", users);
+
+    const usersWithCampaignCount = await Promise.all(
+      users.map(async (user) => {
+        const campaignCount = await messageModel.countDocuments({
+          userId: user._id,
+        });
+        return {
+          ...user._doc,
+          campaignCount,
+        };
+      })
+    );
+
+    return successResponse(
+      res,
+      "Users fetched successfully!",
+      usersWithCampaignCount
+    );
   } catch (error) {
     console.log(`error trying to fetch error`);
     return errorResponse(res, "Server Error!");
   }
 };
+
 const UserView = async (req, res) => {
   try {
     const { id } = req.params;

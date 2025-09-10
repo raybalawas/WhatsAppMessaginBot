@@ -13,10 +13,11 @@ import Signin from "./auth/Signin.jsx";
 import NotFoundRedirect from "./pages/NotFoundRedirect.jsx";
 import Footer from "./layout/Footer.jsx";
 {
-  /*Admin Panle url's*/
+  /*Admin Panle url's⬇️⬇️⬇️⬇️⬇️⬇️⬇️*/
 }
 import AdminDashboardPage from "./PagesAdmin/AdminDashboardPage.jsx";
 import Clients from "./PagesAdmin/Clients.jsx";
+import CampaignList from "./PagesAdmin/CampaignListPage.jsx"
 import ProtectedHomeRoute from "./components/ProtectedHomeRoute.jsx";
 import PrivateRoute from "./components/PrivateRoute.jsx";
 
@@ -90,6 +91,11 @@ function App() {
               </PrivateRoute>
             }
           />
+          <Route path="/admin/user-camp/:id" element={
+            <PrivateRoute allowedRoles={["1"]}>
+              <CampaignList />
+            </PrivateRoute>
+          } />
           <Route
             path="/admin-whatsapp-bot"
             element={

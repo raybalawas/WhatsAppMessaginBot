@@ -49,6 +49,12 @@ function Clients() {
     // Example: navigate to edit page
     navigate(`/admin/edit-user/${userId}`);
   };
+
+  const handleRedirectCamp = (userId) => {
+    console.log("Redirect user on campaignList according to user id:", userId);
+    // Example: navigate to edit page
+    navigate(`/admin/user-camp/${userId}`);
+  };
   const handleToggleStatus = async (user) => {
     const token = localStorage.getItem("authToken");
 
@@ -145,7 +151,13 @@ function Clients() {
                     {user.role === "1" ? "Super Admin" : "User"}
                   </td>
                   <td data-label="Action">
-                    <button className="camp-btn">Campaigns</button>
+                    <button
+                      className="camp-btn"
+                      onClick={() => handleRedirectCamp(user._id)}
+                    >
+                      Campaigns
+                      <span className="camp-count">{user.campaignCount}</span>
+                    </button>
                     <button
                       className={`status-toggle-btn ${
                         user.status === "1" ? "active" : "inactive"
