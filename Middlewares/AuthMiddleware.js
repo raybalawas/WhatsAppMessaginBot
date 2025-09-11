@@ -5,8 +5,8 @@ import { errorResponse } from "../utils/response.js";
 const checkAuth = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
-    console.log("Auth Header From AuthMiddleware:", authHeader);
-    if (!authHeader) {
+    // console.log("Auth Header From AuthMiddleware:", authHeader);
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return errorResponse(
         res,
         "No token provided, authorization denied!",
@@ -15,9 +15,9 @@ const checkAuth = async (req, res, next) => {
     }
 
     const token = authHeader.split(" ")[1];
-    console.log("Token From AuthMiddleware:", token);
+    // console.log("Token From AuthMiddleware:", token);
     const decoded = JWT.verify(token, process.env.JWT_SECRET);
-    console.log("Decoded From AuthMiddleware:", decoded);
+    // console.log("Decoded From AuthMiddleware:", decoded);
     req.user = decoded;
 
     const user = await userModel.findById(decoded.id).select("-password");

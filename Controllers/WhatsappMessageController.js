@@ -5,9 +5,27 @@ import messageModel from "../models/MessageModel.js";
 import cloudinary from "../utils/cloudinary.js";
 import path from "path";
 import statusModel from "../models/StatusModel.js";
+import axios from "axios";
 
 let browserInstance = null;
 
+/* Download file*/
+const downloadFile = async (fileUrl, outputLocationPath) => {
+  const writer = fs.createWriteStream(outputLocationPath);
+
+  const response = await axios({
+    url: fileUrl,
+    method: "GET",
+    responseType: "stream",
+  });
+
+  response.data.pipe(writer);
+
+  return new Promise((resolve, reject) => {
+    writer.on("finish", resolve);
+    writer.on("error", reject);
+  });
+};
 /* ---------- Browser Handling ---------- */
 async function getBrowser() {
   try {
@@ -88,77 +106,361 @@ const formatPhone = (phone) => {
 };
 
 /* ---------- Message Sender ---------- */
+// const MessageSend = async (req, res) => {
+//   try {
+//     const message = req.body?.message?.trim();
+//     const csvFilePath = req.files?.csvfile?.[0]?.path || null;
+//     const anyDesignFile = req.files?.design?.[0]?.path || null;
+
+//     if (!message && !anyDesignFile) {
+//       return res
+//         .status(400)
+//         .json({ status: "error", message: "Message or creative is required" });
+//     }
+
+//     // Upload files to Cloudinary
+//     let csvUrl = null;
+//     let designUrl = null;
+
+//     if (csvFilePath) {
+//       const uploadCsv = await cloudinary.uploader.upload(csvFilePath, {
+//         folder: "whatsapp_csv",
+//         resource_type: "raw",
+//       });
+//       csvUrl = uploadCsv.secure_url;
+//     }
+//     if (anyDesignFile) {
+//       const uploadDesign = await cloudinary.uploader.upload(anyDesignFile, {
+//         folder: "whatsapp_designs",
+//         resource_type: "auto",
+//       });
+//       designUrl = uploadDesign.secure_url;
+//     }
+
+//     // Save campaign in DB
+//     // const saved = await messageModel.create({
+//     //   message,
+//     //   csvFilePath: csvUrl || "N/A",
+//     //   anyDesignFile: designUrl || "N/A",
+//     // });
+
+//     // Parse numbers
+//     const rawPhones = await parseCsv(csvFilePath);
+//     if (!rawPhones.length) {
+//       return res
+//         .status(400)
+//         .json({ status: "error", message: "No numbers in CSV." });
+//     }
+
+//     // Browser
+//     const browser = await getBrowser();
+//     if (!browser)
+//       return res
+//         .status(500)
+//         .json({ status: "error", message: "Browser not available" });
+
+//     const page = await getWhatsappPage(browser);
+//     await page.goto("https://web.whatsapp.com");
+//     console.log("✅ Using saved session. Scan QR if first time.");
+//     await sleep(20000); // Wait for QR if needed
+
+//     const processed = [];
+
+//     for (const rawPhone of rawPhones) {
+//       const phone = formatPhone(rawPhone);
+
+//       if (!/^\d{10,15}$/.test(phone)) {
+//         console.log(`⚠️ Invalid number: ${rawPhone}`);
+//         processed.push({ phone: rawPhone, status: "invalid" });
+//         continue;
+//       }
+
+//       try {
+//         console.log(`🔍 Sending to ${phone}...`);
+//         await page.goto(
+//           `https://web.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(
+//             message
+//           )}`,
+//           { waitUntil: "domcontentloaded", timeout: 60000 }
+//         );
+
+//         // Wait for chat input
+//         const inputBox = await page.waitForSelector(
+//           'div[contenteditable="true"]',
+//           {
+//             visible: true,
+//             timeout: 30000,
+//           }
+//         );
+
+//         // Ensure message is typed
+//         await inputBox.click();
+
+//         // Retry send button logic
+//         let sent = false;
+
+//         for (let attempt = 1; attempt <= 3; attempt++) {
+//           try {
+//             console.log(`🚀 Attempt ${attempt} to send message to ${phone}...`);
+
+//             // 1️⃣ Try modern send icon
+//             try {
+//               const sendIcon = await page.waitForSelector(
+//                 'span[data-icon="send"]',
+//                 {
+//                   timeout: 5000,
+//                 }
+//               );
+//               await sendIcon.click();
+//               console.log("✅ Clicked send icon");
+//             } catch {
+//               console.log("⚠️ Send icon not found, trying fallback...");
+
+//               // 2️⃣ Try button with aria-label
+//               try {
+//                 const sendButton = await page.waitForSelector(
+//                   'button[data-tab="11"][aria-label="Send"]',
+//                   { timeout: 5000 }
+//                 );
+//                 await sendButton.click();
+//                 console.log("✅ Clicked send button (aria-label)");
+//               } catch {
+//                 console.log("⚠️ Send button not found, pressing Enter...");
+
+//                 // 3️⃣ Final fallback → press Enter
+//                 await page.keyboard.press("Enter");
+//                 console.log("✅ Pressed Enter key");
+//               }
+//             }
+
+//             // ✅ Confirm message actually appeared in chat
+//             await page.waitForSelector("div.message-out", { timeout: 10000 });
+//             console.log(`📩 Message confirmed sent to ${phone}`);
+//             sent = true;
+//             break;
+//           } catch (err) {
+//             console.log(
+//               `❌ Attempt ${attempt} failed for ${phone}: ${err.message}`
+//             );
+//             await sleep(2000); // wait before retry
+//           }
+//         }
+
+//         if (!sent) {
+//           console.log(`🚨 Failed to send message to ${phone} after 3 retries`);
+//           processed.push({ phone, status: "error" });
+//         } else {
+//           processed.push({ phone, status: "sent" });
+//         }
+
+//         if (!sent) throw new Error("Send button failed");
+
+//         // If file
+//         if (anyDesignFile) {
+//           const attachBtn = await page.waitForSelector(
+//             'span[data-icon="clip"]',
+//             { timeout: 10000 }
+//           );
+//           await attachBtn.click();
+
+//           const fileInput = await page.waitForSelector('input[type="file"]', {
+//             timeout: 10000,
+//           });
+//           await fileInput.uploadFile(anyDesignFile);
+
+//           await sleep(4000);
+//           const sendFileBtn = await page.waitForSelector(
+//             'span[data-icon="send"]',
+//             { timeout: 10000 }
+//           );
+//           await sendFileBtn.click();
+
+//           console.log(`📎 File sent to ${phone}`);
+//         }
+
+//         processed.push({ phone, status: "sent" });
+//         await randomSleep();
+//       } catch (err) {
+//         console.log(`❌ Error for ${phone}: ${err.message}`);
+//         processed.push({ phone, status: "error" });
+//       }
+//     }
+
+//     // Save results to CSV After processing all numbers, instead of writing a raw CSV, dynamically generate an HTML file
+//     // fs.writeFileSync(
+//     //   "processed_numbers.csv",
+//     //   `phone,status\n${processed
+//     //     .map((p) => `${p.phone},${p.status}`)
+//     //     .join("\n")}`,
+//     //   "utf8"
+//     // );
+
+//     const generateHtmlReport = ({ message, processed, timestamp }) => {
+//       const sentCount = processed.filter((p) => p.status === "sent").length;
+//       const failedCount = processed.filter((p) => p.status === "error").length;
+//       const invalidCount = processed.filter(
+//         (p) => p.status === "invalid"
+//       ).length;
+
+//       return `
+//     <!DOCTYPE html>
+//     <html lang="en">
+//     <head>
+//       <meta charset="UTF-8" />
+//       <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+//       <title>WhatsApp Campaign Summary</title>
+//       <style>
+//         body { font-family: Arial, sans-serif; background: #ece5dd; margin: 20px; padding: 0; }
+//         .container { max-width: 800px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; }
+//         h1 { color: #075e54; }
+//         .summary { margin-bottom: 20px; }
+//         table { width: 100%; border-collapse: collapse; }
+//         th, td { padding: 10px; border-bottom: 1px solid #ddd; }
+//         th { background: #075e54; color: white; }
+//       </style>
+//     </head>
+//     <body>
+//       <div class="container">
+//         <h1>WhatsApp Campaign Summary</h1>
+//         <div class="summary">
+//           <p><strong>Message:</strong> ${message}</p>
+//           <p><strong>Date:</strong> ${timestamp}</p>
+//           <p><strong>Total Numbers:</strong> ${processed.length}</p>
+//           <p><strong>Sent:</strong> ${sentCount}</p>
+//           <p><strong>Failed:</strong> ${failedCount}</p>
+//           <p><strong>Invalid:</strong> ${invalidCount}</p>
+//         </div>
+
+//         <table>
+//           <thead>
+//             <tr>
+//               <th>Phone Number</th>
+//               <th>Status</th>
+//             </tr>
+//           </thead>
+//           <tbody>
+//             ${processed
+//           .map((p) => `<tr><td>${p.phone}</td><td>${p.status}</td></tr>`)
+//           .join("")}
+//           </tbody>
+//         </table>
+//       </div>
+//     </body>
+//     </html>
+//   `;
+//     };
+
+//     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+//     const reportFilename = `whatsapp-report-${timestamp}.html`;
+//     const reportPath = path.join("uploads", reportFilename);
+
+//     fs.writeFileSync(
+//       reportPath,
+//       generateHtmlReport({ message, processed, timestamp }),
+//       "utf8"
+//     );
+
+//     const uploadReport = await cloudinary.uploader.upload(reportPath, {
+//       folder: "whatsapp_reports",
+//       resource_type: "auto",
+//     });
+
+//     const reportUrl = uploadReport.secure_url;
+//     const userId = req.params?.id;
+//     console.log(`users id from parameters: ${userId}`);
+//     await statusModel.create({
+//       userId,
+//       message,
+//       generatedFile: reportUrl,
+//     });
+
+//     fs.unlinkSync(reportPath);
+//     console.log("🎉 Campaign finished. Browser left open for next use.");
+
+//     return res.json({
+//       status: "success",
+//       message: "Processing complete",
+//       // savedRecordId: saved._id,
+//       total: processed.length,
+//       sent: processed.filter((p) => p.status === "sent").length,
+//       invalid: processed.filter((p) => p.status === "invalid").length,
+//       failed: processed.filter((p) => p.status === "error").length,
+//     });
+//   } catch (error) {
+//     console.error("❌ Error in MessageSend:", error);
+//     return res.status(500).json({ status: "error", message: "Server Error" });
+//   }
+// };
+
+
 const MessageSend = async (req, res) => {
   try {
-    const message = req.body?.message?.trim();
-    const csvFilePath = req.files?.csvfile?.[0]?.path || null;
-    const anyDesignFile = req.files?.design?.[0]?.path || null;
-   
-    if (!message && !anyDesignFile) {
-      return res
-        .status(400)
-        .json({ status: "error", message: "Message or creative is required" });
-    }
+    const { userId, message, csvFileUrl, designFileUrl } = req.body;
 
-    // Upload files to Cloudinary
-    let csvUrl = null;
-    let designUrl = null;
-
-    if (csvFilePath) {
-      const uploadCsv = await cloudinary.uploader.upload(csvFilePath, {
-        folder: "whatsapp_csv",
-        resource_type: "raw",
+    if (!message && !designFileUrl) {
+      return res.status(400).json({
+        status: "error",
+        message: "Message or creative is required",
       });
-      csvUrl = uploadCsv.secure_url;
     }
-    if (anyDesignFile) {
-      const uploadDesign = await cloudinary.uploader.upload(anyDesignFile, {
+
+    // Download files temporarily
+    const timestamp = Date.now();
+    const tempCsvPath = path.join(
+      "uploads",
+      `temp-csv-${timestamp}.csv`
+    );
+    const tempDesignPath = path.join(
+      "uploads",
+      `temp-design-${timestamp}`
+    );
+
+    await downloadFile(csvFileUrl, tempCsvPath);
+
+    if (designFileUrl) {
+      await downloadFile(designFileUrl, tempDesignPath);
+    }
+
+    // Upload to Cloudinary
+    const uploadCsv = await cloudinary.uploader.upload(tempCsvPath, {
+      folder: "whatsapp_csv",
+      resource_type: "raw",
+    });
+
+    const uploadDesign = designFileUrl
+      ? await cloudinary.uploader.upload(tempDesignPath, {
         folder: "whatsapp_designs",
         resource_type: "auto",
-      });
-      designUrl = uploadDesign.secure_url;
-    }
+      })
+      : null;
 
-    // Save campaign in DB
-    // const saved = await messageModel.create({
-    //   message,
-    //   csvFilePath: csvUrl || "N/A",
-    //   anyDesignFile: designUrl || "N/A",
-    // });
+    const csvUrl = uploadCsv.secure_url;
+    const designUrl = uploadDesign?.secure_url || null;
 
     // Parse numbers
-    const rawPhones = await parseCsv(csvFilePath);
+    const rawPhones = await parseCsv(tempCsvPath);
     if (!rawPhones.length) {
       return res
         .status(400)
         .json({ status: "error", message: "No numbers in CSV." });
     }
 
-    // Browser
+    // Puppeteer flow (same as before)
     const browser = await getBrowser();
-    if (!browser)
-      return res
-        .status(500)
-        .json({ status: "error", message: "Browser not available" });
-
     const page = await getWhatsappPage(browser);
     await page.goto("https://web.whatsapp.com");
-    console.log("✅ Using saved session. Scan QR if first time.");
-    await sleep(20000); // Wait for QR if needed
+    await sleep(20000);
 
     const processed = [];
-
     for (const rawPhone of rawPhones) {
       const phone = formatPhone(rawPhone);
 
       if (!/^\d{10,15}$/.test(phone)) {
-        console.log(`⚠️ Invalid number: ${rawPhone}`);
         processed.push({ phone: rawPhone, status: "invalid" });
         continue;
       }
 
       try {
-        console.log(`🔍 Sending to ${phone}...`);
         await page.goto(
           `https://web.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(
             message
@@ -166,210 +468,66 @@ const MessageSend = async (req, res) => {
           { waitUntil: "domcontentloaded", timeout: 60000 }
         );
 
-        // Wait for chat input
         const inputBox = await page.waitForSelector(
           'div[contenteditable="true"]',
-          {
-            visible: true,
-            timeout: 30000,
-          }
+          { visible: true, timeout: 30000 }
         );
-
-        // Ensure message is typed
         await inputBox.click();
+        await page.keyboard.press("Enter");
 
-        // Retry send button logic
-        let sent = false;
+        await page.waitForSelector("div.message-out", { timeout: 10000 });
+        processed.push({ phone, status: "sent" });
 
-        for (let attempt = 1; attempt <= 3; attempt++) {
-          try {
-            console.log(`🚀 Attempt ${attempt} to send message to ${phone}...`);
-
-            // 1️⃣ Try modern send icon
-            try {
-              const sendIcon = await page.waitForSelector(
-                'span[data-icon="send"]',
-                {
-                  timeout: 5000,
-                }
-              );
-              await sendIcon.click();
-              console.log("✅ Clicked send icon");
-            } catch {
-              console.log("⚠️ Send icon not found, trying fallback...");
-
-              // 2️⃣ Try button with aria-label
-              try {
-                const sendButton = await page.waitForSelector(
-                  'button[data-tab="11"][aria-label="Send"]',
-                  { timeout: 5000 }
-                );
-                await sendButton.click();
-                console.log("✅ Clicked send button (aria-label)");
-              } catch {
-                console.log("⚠️ Send button not found, pressing Enter...");
-
-                // 3️⃣ Final fallback → press Enter
-                await page.keyboard.press("Enter");
-                console.log("✅ Pressed Enter key");
-              }
-            }
-
-            // ✅ Confirm message actually appeared in chat
-            await page.waitForSelector("div.message-out", { timeout: 10000 });
-            console.log(`📩 Message confirmed sent to ${phone}`);
-            sent = true;
-            break;
-          } catch (err) {
-            console.log(
-              `❌ Attempt ${attempt} failed for ${phone}: ${err.message}`
-            );
-            await sleep(2000); // wait before retry
-          }
-        }
-
-        if (!sent) {
-          console.log(`🚨 Failed to send message to ${phone} after 3 retries`);
-          processed.push({ phone, status: "error" });
-        } else {
-          processed.push({ phone, status: "sent" });
-        }
-
-        if (!sent) throw new Error("Send button failed");
-
-        // If file
-        if (anyDesignFile) {
+        if (designFileUrl) {
           const attachBtn = await page.waitForSelector(
             'span[data-icon="clip"]',
             { timeout: 10000 }
           );
           await attachBtn.click();
 
-          const fileInput = await page.waitForSelector('input[type="file"]', {
-            timeout: 10000,
-          });
-          await fileInput.uploadFile(anyDesignFile);
+          const fileInput = await page.waitForSelector(
+            'input[type="file"]',
+            { timeout: 10000 }
+          );
 
+          await fileInput.uploadFile(tempDesignPath);
           await sleep(4000);
+
           const sendFileBtn = await page.waitForSelector(
             'span[data-icon="send"]',
             { timeout: 10000 }
           );
           await sendFileBtn.click();
-
-          console.log(`📎 File sent to ${phone}`);
         }
 
-        processed.push({ phone, status: "sent" });
         await randomSleep();
       } catch (err) {
-        console.log(`❌ Error for ${phone}: ${err.message}`);
         processed.push({ phone, status: "error" });
       }
     }
 
-    // Save results to CSV After processing all numbers, instead of writing a raw CSV, dynamically generate an HTML file
-    // fs.writeFileSync(
-    //   "processed_numbers.csv",
-    //   `phone,status\n${processed
-    //     .map((p) => `${p.phone},${p.status}`)
-    //     .join("\n")}`,
-    //   "utf8"
-    // );
+    // Clean up temp files
+    fs.unlinkSync(tempCsvPath);
+    if (designFileUrl) fs.unlinkSync(tempDesignPath);
 
-    const generateHtmlReport = ({ message, processed, timestamp }) => {
-      const sentCount = processed.filter((p) => p.status === "sent").length;
-      const failedCount = processed.filter((p) => p.status === "error").length;
-      const invalidCount = processed.filter(
-        (p) => p.status === "invalid"
-      ).length;
-
-      return `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-      <title>WhatsApp Campaign Summary</title>
-      <style>
-        body { font-family: Arial, sans-serif; background: #ece5dd; margin: 20px; padding: 0; }
-        .container { max-width: 800px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; }
-        h1 { color: #075e54; }
-        .summary { margin-bottom: 20px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 10px; border-bottom: 1px solid #ddd; }
-        th { background: #075e54; color: white; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <h1>WhatsApp Campaign Summary</h1>
-        <div class="summary">
-          <p><strong>Message:</strong> ${message}</p>
-          <p><strong>Date:</strong> ${timestamp}</p>
-          <p><strong>Total Numbers:</strong> ${processed.length}</p>
-          <p><strong>Sent:</strong> ${sentCount}</p>
-          <p><strong>Failed:</strong> ${failedCount}</p>
-          <p><strong>Invalid:</strong> ${invalidCount}</p>
-        </div>
-
-        <table>
-          <thead>
-            <tr>
-              <th>Phone Number</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${processed
-          .map((p) => `<tr><td>${p.phone}</td><td>${p.status}</td></tr>`)
-          .join("")}
-          </tbody>
-        </table>
-      </div>
-    </body>
-    </html>
-  `;
-    };
-
-    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-    const reportFilename = `whatsapp-report-${timestamp}.html`;
-    const reportPath = path.join("uploads", reportFilename);
-
-    fs.writeFileSync(
-      reportPath,
-      generateHtmlReport({ message, processed, timestamp }),
-      "utf8"
-    );
-
-    const uploadReport = await cloudinary.uploader.upload(reportPath, {
-      folder: "whatsapp_reports",
-      resource_type: "auto",
-    });
-
-    const reportUrl = uploadReport.secure_url;
-    const userId = req.params.id;
     await statusModel.create({
       userId,
       message,
-      generatedFile: reportUrl,
+      generatedFile: csvUrl,
     });
-
-    fs.unlinkSync(reportPath);
-    console.log("🎉 Campaign finished. Browser left open for next use.");
 
     return res.json({
       status: "success",
-      message: "Processing complete",
-      // savedRecordId: saved._id,
       total: processed.length,
       sent: processed.filter((p) => p.status === "sent").length,
       invalid: processed.filter((p) => p.status === "invalid").length,
       failed: processed.filter((p) => p.status === "error").length,
     });
-  } catch (error) {
-    console.error("❌ Error in MessageSend:", error);
-    return res.status(500).json({ status: "error", message: "Server Error" });
+  } catch (err) {
+    console.error("❌ Error in MessageSend:", err);
+    return res
+      .status(500)
+      .json({ status: "error", message: "Server error" });
   }
 };
 

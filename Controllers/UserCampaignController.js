@@ -93,7 +93,7 @@ const getCampaignsByUserId = async (req, res) => {
       .find({ userId })
       .populate("userId", "name email mobile")
       .sort({_id:-1});
-    console.log(camps);
+    // console.log(camps);
     if (!camps || camps.length === 0) {
       return res.status(400).json({
         Message: "User has not uploaded a single Campaign yet!",

@@ -14,7 +14,7 @@ const Signup = async (req, res) => {
     const ExistUser = await userModel.findOne({
       $or: [{ userName }, { email }, { mobile }],
     });
-    console.log(ExistUser);
+    // console.log(ExistUser);
     if (ExistUser) {
       return errorResponse(
         res,
@@ -200,13 +200,13 @@ const UserView = async (req, res) => {
     const { id } = req.params;
     const users = await userModel.findById(id).select("-password");
     if (!users) {
-      console.log(`users not found`);
+      // console.log(`users not found`);
       return errorResponse(res, "users not found", 300);
     }
-    console.log(users);
+    // console.log(users);
     return successResponse(res, "User view fetched successfully!", users);
   } catch (error) {
-    console.log(`error trying to fetch error`);
+    // console.log(`error trying to fetch error`);
     return errorResponse(res, "Server Error!");
   }
 };
@@ -214,7 +214,7 @@ const userdelete = async (req, res) => {
   try {
     const { id } = req.params;
     const deletedUser = await userModel.findByIdAndDelete(id);
-    console.log(deletedUser);
+    // console.log(deletedUser);
     if (!deletedUser) {
       console.log("User not found or not allowed to delete!");
       return res
