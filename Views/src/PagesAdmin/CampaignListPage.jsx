@@ -6,7 +6,7 @@ import { useParams } from "react-router-dom";
 function CampaignListPage() {
   const { id } = useParams();
   const [campaigns, setCampaigns] = useState([]);
-
+  const [loadingCampaignId, setLoadingCampaignId] = useState(null);
   useEffect(() => {
     const fetchCamps = async () => {
       const token = localStorage.getItem("authToken");
@@ -107,6 +107,8 @@ function CampaignListPage() {
     }
 
     try {
+      setLoadingCampaignId(camp._id); // Disable this specific button
+
       const res = await axios.post(
         "http://localhost:3000/api/whatsapp/whatsapp-message-send",
         {
@@ -182,9 +184,13 @@ function CampaignListPage() {
                     <button
                       className="launch"
                       onClick={() => handleLaunchCampaign(camp)}
+                      disabled={loadingCampaignId === camp._id}
                     >
-                      Launch Campaign
+                      {loadingCampaignId === camp._id
+                        ? "Launching..."
+                        : "Launch Campaign"}
                     </button>
+
                     <button className="edit">Edit</button>
                     <button className="delete">Delete</button>
                   </td>

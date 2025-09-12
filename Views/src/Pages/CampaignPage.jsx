@@ -4,6 +4,8 @@ import { USER_CAMPAIGN_SUBMIT } from "../../../utils/apiConfig.js";
 // import axios from "axios";
 
 export default function CampaignPage() {
+  const [loadingCampaign, setLoadingCampaign] = useState(false);
+
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     message: "",
@@ -130,6 +132,7 @@ export default function CampaignPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoadingCampaign(true);
     setLoading(true);
 
     const token = localStorage.getItem("authToken");
@@ -172,6 +175,7 @@ export default function CampaignPage() {
       alert("Server error occurred.");
     } finally {
       setLoading(false);
+      setLoadingCampaign(false);
     }
   };
 
@@ -311,8 +315,13 @@ export default function CampaignPage() {
                   Next ➡
                 </button>
               ) : (
-                <button type="submit" className="btn-launch">
+                <button
+                  type="submit"
+                  className="btn-launch"
+                  disabled={loadingCampaign}
+                >
                   🚀 Launch Campaign
+                  {loadingCampaign ? "Launching..." : "🚀 Launch Campaign"}
                 </button>
               )}
             </div>

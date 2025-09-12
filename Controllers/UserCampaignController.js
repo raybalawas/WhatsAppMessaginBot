@@ -1,6 +1,6 @@
 import messageModel from "../models/MessageModel.js";
 import cloudinary from "../utils/cloudinary.js"; // assuming you use cloudinary
-import { errorResponse } from "../utils/response.js";
+import { errorResponse, successResponse } from "../utils/response.js";
 import fs from "fs/promises";
 
 const userSubmitCampaign = async (req, res) => {
@@ -86,13 +86,24 @@ const deleteAllCampaign = async (req, res) => {
   }
 };
 
+const deleteCampaign = async (req, res) => {
+  try {
+    const id = req.params.id();
+    console.log(`you are deleting a campaign that's id is:${id}`);
+    await messageModel.findOneAndDelete(id);
+    return successResponse(res, 'campaign deleted successfully!', 200);
+  } catch (error) {
+    console.log(`Error while delete camp one by one:${error.message}`);
+    return errorResponse(res, "Server Error! try again", 500);
+  }
+}
 const getCampaignsByUserId = async (req, res) => {
   try {
     const userId = req.params.id;
     const camps = await messageModel
       .find({ userId })
       .populate("userId", "name email mobile")
-      .sort({_id:-1});
+      .sort({ _id: -1 });
     // console.log(camps);
     if (!camps || camps.length === 0) {
       return res.status(400).json({
