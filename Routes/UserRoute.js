@@ -18,7 +18,7 @@ import {
   userSubmitCampaign,
   getAllCampaigns,
   deleteAllCampaign,
-  deleteCampaign
+  deleteCampaign,
   getCampaignsByUserId,
 } from "../Controllers/UserCampaignController.js";
 import multer from "multer";

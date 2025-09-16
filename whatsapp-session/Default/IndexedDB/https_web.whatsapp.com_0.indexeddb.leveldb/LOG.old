@@ -1,50 +1,37 @@
-2025/09/12-10:16:53.358 42fc Reusing MANIFEST D:\reactProjects\WhatsappBulkCampaign\whatsapp-session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
-2025/09/12-10:16:53.393 42fc Recovering log #2252
-2025/09/12-10:16:53.453 42fc Reusing old log D:\reactProjects\WhatsappBulkCampaign\whatsapp-session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/002252.log 
-2025/09/12-10:16:55.088 108 Level-0 table #2268: started
-2025/09/12-10:16:55.183 108 Level-0 table #2268: 528213 bytes OK
-2025/09/12-10:16:55.191 108 Delete type=0 #2252
-2025/09/12-10:16:55.206 108 Manual compaction at level-0 from ' \x18\x01\x00\x00\x00' @ 72057594037927935 : 1 .. ' \x19\x01\x00\x00\x00' @ 0 : 0; will stop at ' \x18\x01\x00\x00\x05' @ 5130729 : 1
-2025/09/12-10:16:55.223 108 Compacting 1@0 + 1@1 files
-2025/09/12-10:16:55.314 108 Generated table #2269@0: 13839 keys, 261718 bytes
-2025/09/12-10:16:55.374 108 Generated table #2270@0: 31 keys, 2710 bytes
-2025/09/12-10:16:55.374 108 Compacted 1@0 + 1@1 files => 264428 bytes
-2025/09/12-10:16:55.407 108 compacted to: files[ 0 2 16 0 0 0 0 ]
-2025/09/12-10:16:55.407 108 Delete type=2 #2268
-2025/09/12-10:16:55.428 311c Manual compaction at level-0 from ' \x18\x01\x00\x00\x05' @ 5130729 : 1 .. ' \x19\x01\x00\x00\x00' @ 0 : 0; will stop at (end)
-2025/09/12-10:16:58.766 42fc Compacting 1@1 + 9@2 files
-2025/09/12-10:16:59.039 42fc Generated table #2271@1: 88256 keys, 2240291 bytes
-2025/09/12-10:16:59.173 42fc Generated table #2272@1: 98682 keys, 2250739 bytes
-2025/09/12-10:17:00.077 42fc Generated table #2273@1: 68530 keys, 2260862 bytes
-2025/09/12-10:17:00.519 42fc Generated table #2274@1: 48249 keys, 2211184 bytes
-2025/09/12-10:17:00.665 42fc Generated table #2275@1: 3654 keys, 2140600 bytes
-2025/09/12-10:17:00.810 42fc Generated table #2276@1: 1985 keys, 2145280 bytes
-2025/09/12-10:17:00.933 42fc Generated table #2277@1: 8152 keys, 2161054 bytes
-2025/09/12-10:17:01.288 42fc Generated table #2278@1: 30987 keys, 2251627 bytes
-2025/09/12-10:17:01.440 42fc Generated table #2279@1: 7829 keys, 2145091 bytes
-2025/09/12-10:17:01.456 42fc Generated table #2280@1: 311 keys, 76512 bytes
-2025/09/12-10:17:01.456 42fc Compacted 1@1 + 9@2 files => 19883240 bytes
-2025/09/12-10:17:01.458 42fc compacted to: files[ 0 1 17 0 0 0 0 ]
-2025/09/12-10:17:01.460 42fc Delete type=2 #2255
-2025/09/12-10:17:01.460 42fc Delete type=2 #2256
-2025/09/12-10:17:01.460 42fc Delete type=2 #2257
-2025/09/12-10:17:01.460 42fc Delete type=2 #2258
-2025/09/12-10:17:01.460 42fc Delete type=2 #2259
-2025/09/12-10:17:01.460 42fc Delete type=2 #2260
-2025/09/12-10:17:01.460 42fc Delete type=2 #2261
-2025/09/12-10:17:01.460 42fc Delete type=2 #2262
-2025/09/12-10:17:01.460 42fc Delete type=2 #2263
-2025/09/12-10:17:01.464 42fc Delete type=2 #2264
-2025/09/12-10:17:01.465 42fc Delete type=2 #2269
-2025/09/12-10:17:09.502 5a2c Level-0 table #2282: started
-2025/09/12-10:17:09.605 5a2c Level-0 table #2282: 587500 bytes OK
-2025/09/12-10:17:09.607 5a2c Delete type=0 #2267
-2025/09/12-10:17:09.619 5a2c Manual compaction at level-0 from ' \x19\x01\x00\x00\x00' @ 72057594037927935 : 1 .. ' \x1a\x01\x00\x00\x00' @ 0 : 0; will stop at ' \x19\x01\x00\x00\x05' @ 5147846 : 1
-2025/09/12-10:17:09.619 5a2c Compacting 1@0 + 1@1 files
-2025/09/12-10:17:09.669 5a2c Generated table #2283@0: 10057 keys, 254455 bytes
-2025/09/12-10:17:09.687 5a2c Generated table #2284@0: 33 keys, 2775 bytes
-2025/09/12-10:17:09.687 5a2c Compacted 1@0 + 1@1 files => 257230 bytes
-2025/09/12-10:17:09.689 5a2c compacted to: files[ 0 2 17 0 0 0 0 ]
-2025/09/12-10:17:09.690 5a2c Delete type=2 #2282
-2025/09/12-10:17:09.691 42fc Manual compaction at level-0 from ' \x19\x01\x00\x00\x05' @ 5147846 : 1 .. ' \x1a\x01\x00\x00\x00' @ 0 : 0; will stop at (end)
-2025/09/12-10:17:12.715 2560 Compacting 1@1 + 9@2 files
+2025/09/16-16:30:36.409 4d70 Reusing MANIFEST D:\reactProjects\WhatsappBulkCampaign\whatsapp-session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/09/16-16:30:36.424 4d70 Recovering log #2648
+2025/09/16-16:30:36.434 4d70 Reusing old log D:\reactProjects\WhatsappBulkCampaign\whatsapp-session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/002648.log 
+2025/09/16-16:30:38.619 2d3c Level-0 table #2665: started
+2025/09/16-16:30:38.645 2d3c Level-0 table #2665: 165593 bytes OK
+2025/09/16-16:30:38.652 2d3c Delete type=0 #2648
+2025/09/16-16:30:38.654 4d90 Manual compaction at level-0 from ' .\x01\x00\x00\x00' @ 72057594037927935 : 1 .. ' /\x01\x00\x00\x00' @ 0 : 0; will stop at ' .\x01\x00\x00\x05' @ 5686599 : 1
+2025/09/16-16:30:38.656 4d90 Compacting 1@0 + 1@1 files
+2025/09/16-16:30:38.676 4d90 Generated table #2666@0: 4010 keys, 88749 bytes
+2025/09/16-16:30:38.705 4d90 Generated table #2667@0: 238 keys, 10732 bytes
+2025/09/16-16:30:38.705 4d90 Compacted 1@0 + 1@1 files => 99481 bytes
+2025/09/16-16:30:38.708 4d90 compacted to: files[ 0 2 16 0 0 0 0 ]
+2025/09/16-16:30:38.708 4d90 Delete type=2 #2665
+2025/09/16-16:30:38.712 4d70 Manual compaction at level-0 from ' .\x01\x00\x00\x05' @ 5686599 : 1 .. ' /\x01\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/09/16-16:30:41.797 4dd4 Compacting 1@1 + 9@2 files
+2025/09/16-16:30:41.968 4dd4 Generated table #2668@1: 89172 keys, 2240304 bytes
+2025/09/16-16:30:42.480 4dd4 Generated table #2669@1: 97031 keys, 2249990 bytes
+2025/09/16-16:30:43.297 4dd4 Generated table #2670@1: 101479 keys, 2253237 bytes
+2025/09/16-16:30:43.475 4dd4 Generated table #2671@1: 38671 keys, 2242903 bytes
+2025/09/16-16:30:43.739 4dd4 Generated table #2672@1: 36084 keys, 2193816 bytes
+2025/09/16-16:30:43.817 4dd4 Generated table #2673@1: 1654 keys, 2138987 bytes
+2025/09/16-16:30:43.888 4dd4 Generated table #2674@1: 1728 keys, 2143812 bytes
+2025/09/16-16:30:44.019 4dd4 Generated table #2675@1: 16527 keys, 2207376 bytes
+2025/09/16-16:30:44.163 4dd4 Generated table #2676@1: 27181 keys, 2201704 bytes
+2025/09/16-16:30:44.163 4dd4 Compacted 1@1 + 9@2 files => 19872129 bytes
+2025/09/16-16:30:44.165 4dd4 compacted to: files[ 0 1 16 0 0 0 0 ]
+2025/09/16-16:30:44.167 4dd4 Delete type=2 #2651
+2025/09/16-16:30:44.168 4dd4 Delete type=2 #2652
+2025/09/16-16:30:44.168 4dd4 Delete type=2 #2653
+2025/09/16-16:30:44.168 4dd4 Delete type=2 #2654
+2025/09/16-16:30:44.169 4dd4 Delete type=2 #2655
+2025/09/16-16:30:44.169 4dd4 Delete type=2 #2656
+2025/09/16-16:30:44.169 4dd4 Delete type=2 #2657
+2025/09/16-16:30:44.169 4dd4 Delete type=2 #2658
+2025/09/16-16:30:44.170 4dd4 Delete type=2 #2659
+2025/09/16-16:30:44.170 4dd4 Delete type=2 #2660
+2025/09/16-16:30:44.170 4dd4 Delete type=2 #2666

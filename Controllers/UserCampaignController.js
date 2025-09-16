@@ -97,6 +97,7 @@ const deleteCampaign = async (req, res) => {
     return errorResponse(res, "Server Error! try again", 500);
   }
 }
+
 const getCampaignsByUserId = async (req, res) => {
   try {
     const userId = req.params.id;
@@ -127,5 +128,6 @@ export {
   userSubmitCampaign,
   getAllCampaigns,
   deleteAllCampaign,
+  deleteCampaign,
   getCampaignsByUserId,
 };
