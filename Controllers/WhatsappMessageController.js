@@ -47,7 +47,7 @@ async function getBrowser() {
       args: ["--start-maximized"],
       executablePath:
         'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',
-      userDataDir: "./whatsapp-session", // Keeps QR session alive
+      userDataDir: "./whatsapp-session800", // Keeps QR session alive
     });
 
     console.log("✅ Puppeteer launched (new instance).");
