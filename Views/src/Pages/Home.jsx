@@ -1,5 +1,7 @@
 import React from "react";
 import "./styles/Home.css";
+import { Link } from "react-router-dom";
+import PaymentPlans from "../components/PaymentPlans";
 
 function Home() {
   return (
@@ -44,7 +46,7 @@ function Home() {
 
       {/* Subscription Plans Section */}
       <section className="subscription-plans">
-        <h2>💳 Subscription Plans</h2>
+        {/* <h2>💳 Subscription Plans</h2>
         <div className="plans-grid">
           <div className="plan-card">
             <h3>Basic</h3>
@@ -78,6 +80,9 @@ function Home() {
             </ul>
             <button className="plan-btn">Choose Plan</button>
           </div>
+        </div> */}
+        <div>
+          <PaymentPlans />
         </div>
       </section>
 
@@ -88,7 +93,12 @@ function Home() {
           Sign up today and get <strong>100 free WhatsApp messages</strong> to
           try our service.
         </p>
-        <button className="cta-btn">Claim Offer</button>
+
+        {/* <p onClick={() => handleProtectedLink("/signup")}> */}
+        <Link to="/signup">
+          <button className="cta-btn">Claim Offer</button>
+        </Link>
+        {/* </p> */}
       </section>
     </div>
   );

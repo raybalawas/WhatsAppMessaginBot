@@ -1,4 +1,5 @@
 import messageModel from "../models/MessageModel.js";
+import statusModel from "../models/StatusModel.js";
 import cloudinary from "../utils/cloudinary.js"; // assuming you use cloudinary
 import { errorResponse, successResponse } from "../utils/response.js";
 import fs from "fs/promises";
@@ -124,10 +125,60 @@ const getCampaignsByUserId = async (req, res) => {
   }
 };
 
+const getReportsForUser = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const reports = await statusModel.find({ userId })
+      .sort({ createdAt: -1 });
+    // console.log(reports);
+    if (!reports || reports.length === 0) {
+      return res.status(400).json({
+        message: "No reports found for this user.",
+        data: [],
+      });
+    }
+    return res.status(200).json({
+      message: "Reports fetched successfully!",
+      data: reports,
+    });
+  } catch (error) {
+    console.log(`Error while fetching reports for user:${error.message}`);
+    return res.status(500).json({
+      message: "Server error! try again.",
+    });
+  }
+};
+
+const getCampaignsForUser = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const camps = await messageModel
+      .find({ userId })
+      .sort({ _id: -1 });
+    // console.log(camps);
+    if (!camps || camps.length === 0) {
+      return res.status(400).json({
+        Message: "User has not uploaded a single Campaign yet!",
+        data: [],
+      });
+    }
+    return res.status(200).json({
+      Message: "Campaigns fetched successfully!",
+      Data: camps,
+    });
+  } catch (error) {
+    console.log(`Error while fetching campaigns by user id:${error.message}`);
+    return res.status(500).json({
+      Message: "Server error! try again.",
+    });
+  }
+};
 export {
   userSubmitCampaign,
   getAllCampaigns,
   deleteAllCampaign,
   deleteCampaign,
   getCampaignsByUserId,
+  getReportsForUser,
+  getCampaignsForUser
 };

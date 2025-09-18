@@ -8,6 +8,7 @@ import CampaignPage from "./Pages/CampaignPage.jsx";
 import StatusPage from "./Pages/StatusPage.jsx";
 import SettingsPage from "./Pages/SettingsPage.jsx";
 import Reports from "./Pages/Reports.jsx";
+import Plans from "./Pages/Plans.jsx";
 import Signup from "./auth/Signup.jsx";
 import Signin from "./auth/Signin.jsx";
 import NotFoundRedirect from "./pages/NotFoundRedirect.jsx";
@@ -74,6 +75,14 @@ function App() {
             }
           />
 
+          <Route
+            path="/plans"
+            element={
+              <PrivateRoute allowedRoles={["0"]}>
+                <Plans />
+              </PrivateRoute>
+            }
+          />
           {/* Admin Routes (allowed role "1") */}
           <Route
             path="/admin-dashboard"
@@ -91,11 +100,14 @@ function App() {
               </PrivateRoute>
             }
           />
-          <Route path="/admin/user-camp/:id" element={
-            <PrivateRoute allowedRoles={["1"]}>
-              <CampaignList />
-            </PrivateRoute>
-          } />
+          <Route
+            path="/admin/user-camp/:id"
+            element={
+              <PrivateRoute allowedRoles={["1"]}>
+                <CampaignList />
+              </PrivateRoute>
+            }
+          />
           <Route
             path="/admin-whatsapp-bot"
             element={

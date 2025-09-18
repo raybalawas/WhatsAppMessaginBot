@@ -105,6 +105,9 @@ function Navbar() {
               <li>
                 <p onClick={() => handleProtectedLink("/setting")}>Settings</p>
               </li>
+              <li>
+                <p onClick={() => handleProtectedLink("/plans")}>Plans</p>
+              </li>
             </>
           )}
 

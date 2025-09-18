@@ -3,9 +3,9 @@
   max-width: 1200px;
   margin: 20px auto;
   padding: 20px;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
@@ -13,46 +13,71 @@
   text-align: center;
   margin-bottom: 24px;
   color: #1e3a8a;
-  font-size: clamp(1.5rem, 2vw, 2rem);
+  font-size: clamp(1.6rem, 2.5vw, 2.2rem);
+  font-weight: 700;
+  letter-spacing: 0.5px;
 }
 
 .status-table-container {
   width: 100%;
   overflow-x: auto;
+  border-radius: 12px;
 }
 
 .status-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 600px;
+  min-width: 700px;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 .status-table th,
 .status-table td {
-  padding: 12px 15px;
-  border: 1px solid #e5e7eb;
+  padding: 14px 16px;
   text-align: center;
   font-size: 14px;
 }
 
 .status-table th {
   background: #2563eb;
-  color: white;
+  color: #ffffff;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-table tr {
+  transition: background 0.2s ease-in-out;
 }
 
 .status-table tr:nth-child(even) {
   background: #f9fafb;
 }
 
+.status-table tr:hover {
+  background: #eef2ff;
+}
+
+.message-col {
+  max-width: 280px;
+  text-align: left;
+  word-break: break-word;
+  color: #374151;
+  font-size: 13px;
+}
+
+/* 🔵 Status Badges */
 .status {
   padding: 6px 12px;
-  border-radius: 6px;
+  border-radius: 20px;
   font-weight: 600;
   font-size: 13px;
   display: inline-block;
-  min-width: 90px;
+  min-width: 100px;
   text-align: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 .status.completed {
@@ -70,6 +95,23 @@
   color: #1e40af;
 }
 
+.status.failed {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* 🔗 Links */
+.status-table a {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.status-table a:hover {
+  text-decoration: underline;
+}
+
+/* 📱 Responsive */
 @media (max-width: 768px) {
   .status-table th,
   .status-table td {
@@ -96,7 +138,7 @@
     margin-bottom: 15px;
     background: #f9fafb;
     border: 1px solid #e5e7eb;
-    border-radius: 8px;
+    border-radius: 12px;
     padding: 12px;
   }
 
@@ -114,4 +156,21 @@
     font-weight: 600;
     color: #374151;
   }
+}
+
+.toggle-btn {
+  background: none;
+  border: none;
+  color: #2563eb;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 6px;
+  margin-top: 6px;
+  display: inline-block;
+  font-size: 13px;
+  transition: color 0.2s ease;
+}
+
+.toggle-btn:hover {
+  color: #1e40af;
 }

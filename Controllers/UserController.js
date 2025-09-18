@@ -106,7 +106,7 @@ const Signup = async (req, res) => {
 const Signin = async (req, res) => {
   try {
     const { identifier, password } = req.body;
-
+    console.log("Signin Request Body:", req.body);
     if (!identifier || !password) {
       return errorResponse(res, "Identifier and password are required", 400);
     }

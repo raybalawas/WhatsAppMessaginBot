@@ -3,40 +3,55 @@ import "./styles/Reports.css";
 
 function Reports() {
   const [reports, setReports] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [expanded, setExpanded] = useState(null); // for expanding long messages
 
-  // Fetch dummy reports (later you can replace with API)
   useEffect(() => {
-    const dummyReports = [
-      {
-        id: 1,
-        title: "Campaign 1",
-        date: "2025-09-08",
-        status: "Completed",
-        clicks: 120,
-        messages: 500,
-      },
-      {
-        id: 2,
-        title: "Campaign 2",
-        date: "2025-09-07",
-        status: "Pending",
-        clicks: 45,
-        messages: 230,
-      },
-      {
-        id: 3,
-        title: "Campaign 3",
-        date: "2025-09-05",
-        status: "In Progress",
-        clicks: 78,
-        messages: 300,
-      },
-    ];
-    setReports(dummyReports);
+    const fetchReports = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        const userId = localStorage.getItem("authUserId");
+
+        if (!token || !userId) {
+          setError("Not logged in or missing credentials.");
+          setLoading(false);
+          return;
+        }
+
+        const res = await fetch(
+          `http://localhost:3000/api/users/reports/${userId}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        const data = await res.json();
+
+        if (res.ok) {
+          setReports(data.data); // API gives { message, data: [...] }
+        } else {
+          setError(data.message || "Failed to fetch reports.");
+        }
+      } catch (err) {
+        setError("Something went wrong: " + err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReports();
   }, []);
 
+  if (loading) return <p>Loading reports...</p>;
+  if (error) return <p className="error">{error}</p>;
+
   return (
-    <div class="main-content">
+    <div className="main-content">
       <div className="reports-container">
         <h1>📊 Reports</h1>
 
@@ -45,30 +60,75 @@ function Reports() {
             <thead>
               <tr>
                 <th>ID</th>
-                <th>Campaign Name</th>
-                <th>Date</th>
-                <th>Status</th>
-                <th>Clicks</th>
-                <th>Messages Sent</th>
+                <th>Message</th>
+                <th>Created At</th>
+                <th>Download Report</th>
               </tr>
             </thead>
             <tbody>
               {reports.map((report) => (
-                <tr key={report.id}>
-                  <td data-label="ID">{report.id}</td>
-                  <td data-label="Campaign Name">{report.title}</td>
-                  <td data-label="Date">{report.date}</td>
-                  <td data-label="Status">
-                    <span
-                      className={`status ${report.status
-                        .toLowerCase()
-                        .replace(" ", "-")}`}
+                <tr key={report._id}>
+                  {/* Report ID with copy button */}
+                  <td data-label="ID">
+                    <span>{report._id}</span>
+                    {/* <button
+                      className="copy-btn"
+                      onClick={() => navigator.clipboard.writeText(report._id)}
                     >
-                      {report.status}
-                    </span>
+                      📋 copy id
+                    </button> */}
                   </td>
-                  <td data-label="Clicks">{report.clicks}</td>
-                  <td data-label="Messages Sent">{report.messages}</td>
+
+                  {/* Expandable Message */}
+                  <td data-label="Message">
+                    {expanded === report._id ? (
+                      <>
+                        <p>{report.message}</p>
+                        <a
+                          className="toggle-btn"
+                          onClick={() => setExpanded(null)}
+                        >
+                          Show Less ▲
+                        </a>
+                      </>
+                    ) : (
+                      <>
+                        <p>
+                          {report.message.length > 100
+                            ? report.message.substring(0, 100) + "..."
+                            : report.message}
+                        </p>
+                        {report.message.length > 100 && (
+                          <a
+                            className="toggle-btn"
+                            onClick={() => setExpanded(report._id)}
+                          >
+                            Show More ▼
+                          </a>
+                        )}
+                      </>
+                    )}
+                  </td>
+
+                  {/* Created At */}
+                  <td data-label="Created At">
+                    {new Date(report.createdAt).toLocaleString()}
+                  </td>
+
+                  {/* Download Report */}
+                  <td data-label="Download Report">
+                    {report.generatedFile ? (
+                      <a
+                        href={report.generatedFile}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        ⬇️ Download CSV
+                      </a>
+                    ) : (
+                      <span>No file</span>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>

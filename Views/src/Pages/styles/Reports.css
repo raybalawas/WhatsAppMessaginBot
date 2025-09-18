@@ -154,3 +154,25 @@
   cursor: pointer;
   border-radius: 50%;
 }
+
+.toggle-btn{
+  background-color: #2563eb;
+  color: white;
+  padding: 5px 10px;
+  margin-left: 10px;
+  margin-right: 10px;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.toggle-btn:hover{
+  background-color: #2563eb;
+  color: white;
+  padding: 4px 10px;
+  margin-left: 10px;
+  margin-right: 10px;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+}

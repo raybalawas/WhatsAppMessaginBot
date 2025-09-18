@@ -6,6 +6,7 @@ import cloudinary from "../utils/cloudinary.js";
 import path from "path";
 import statusModel from "../models/StatusModel.js";
 import axios from "axios";
+import PDFDocument from "pdfkit";
 
 let browserInstance = null;
 
@@ -41,12 +42,12 @@ async function getBrowser() {
     }
 
     browserInstance = await puppeteer.launch({
-      // executablePath:
-      //   "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe", // Change path for Chrome/Brave if needed
       headless: false,
-      userDataDir: "./whatsapp-session", // Keeps QR session alive
       defaultViewport: null,
       args: ["--start-maximized"],
+      executablePath:
+        'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',
+      userDataDir: "./whatsapp-session", // Keeps QR session alive
     });
 
     console.log("✅ Puppeteer launched (new instance).");
@@ -392,6 +393,48 @@ const formatPhone = (phone) => {
 //   }
 // };
 
+/* Generate PDF Report */
+const generatePdfReport = (processed, outputPath, message) => {
+  const doc = new PDFDocument({ margin: 40 });
+  doc.pipe(fs.createWriteStream(outputPath));
+
+  // Title
+  doc.fontSize(22).text("📊 WhatsApp Campaign Report", { align: "center" });
+  doc.moveDown();
+
+  // Campaign details
+  doc.fontSize(14).text(`Message: ${message}`);
+  doc.text(`Date: ${new Date().toLocaleString()}`);
+  doc.moveDown();
+
+  // Summary
+  const sent = processed.filter((p) => p.status === "sent").length;
+  const invalid = processed.filter((p) => p.status === "invalid").length;
+  const failed = processed.filter((p) => p.status === "error").length;
+
+  doc.fontSize(12).text(`Total: ${processed.length}`);
+  doc.text(`✅ Sent: ${sent}`);
+  doc.text(`❌ Failed: ${failed}`);
+  doc.text(`📵 Invalid: ${invalid}`);
+  doc.moveDown();
+
+  // Table Header
+  doc.fontSize(14).text("Details:", { underline: true });
+  doc.moveDown(0.5);
+
+  // Table Rows
+  processed.forEach((item, i) => {
+    let statusIcon =
+      item.status === "sent"
+        ? "✅"
+        : item.status === "invalid"
+          ? "📵"
+          : "❌";
+    doc.fontSize(12).text(`${i + 1}. ${item.phone} - ${statusIcon} ${item.status}`);
+  });
+
+  doc.end();
+};
 
 const MessageSend = async (req, res) => {
   try {
@@ -413,6 +456,10 @@ const MessageSend = async (req, res) => {
     const tempDesignPath = path.join(
       "uploads",
       `temp-design-${timestamp}`
+    );
+    const tempPdfPath = path.join(
+      "uploads",
+      `report-${timestamp}.pdf`
     );
 
     await downloadFile(csvFileUrl, tempCsvPath);
@@ -509,13 +556,43 @@ const MessageSend = async (req, res) => {
     // Clean up temp files
     fs.unlinkSync(tempCsvPath);
     if (designFileUrl) fs.unlinkSync(tempDesignPath);
+    // Generate PDF report
+    generatePdfReport(processed, tempPdfPath, message);
 
+    // Upload report to Cloudinary
+    const uploadReport = await cloudinary.uploader.upload(tempPdfPath, {
+      folder: "whatsapp_reports",
+      resource_type: "raw",
+    });
+    const reportUrl = uploadReport.secure_url;
+    // Save status
     await statusModel.create({
       userId,
       message,
-      generatedFile: csvUrl,
+      generatedFile: reportUrl,
     });
-
+    // status update in messageModel
+    const AuthUserId = req.params?.id;
+    console.log(`users id from parameters: ${userId}`);
+    // const updateStatus = await messageModel.findByIdAndUpdate(AuthUserId, {
+    //   status: "completed",
+    // });
+    // if (!updateStatus) {
+    //   console.log("❌ Failed to update message status");
+    //   try {
+    //     return res
+    //       .status(500)
+    //       .json({ status: "error", message: "Failed to update message status" });
+    //   } catch (error) {
+    //     console.error("❌ Error sending failure response:", error.message);
+    //     return;
+    //   }
+    // }
+    // Cleanup temp files
+    fs.unlinkSync(tempCsvPath);
+    if (designFileUrl) fs.unlinkSync(tempDesignPath);
+    fs.unlinkSync(tempPdfPath);
+    console.log("🎉 Campaign finished. Browser left open for next use.");
     return res.json({
       status: "success",
       total: processed.length,

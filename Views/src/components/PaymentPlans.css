@@ -1,0 +1,125 @@
+.plans-wrapper {
+  max-width: 1200px;
+  margin: auto;
+  padding: 40px 20px;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.plans-title {
+  text-align: center;
+  font-size: 2.2rem;
+  margin-bottom: 30px;
+  color: #1e3a8a;
+}
+
+/* Payment Policy */
+.payment-policy {
+  background: linear-gradient(135deg, #2563eb, #1e40af);
+  color: white;
+  padding: 25px;
+  border-radius: 12px;
+  text-align: center;
+  margin-bottom: 40px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+}
+.payment-policy h2 {
+  margin-bottom: 15px;
+}
+.payment-policy ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 auto 20px;
+  text-align: left;
+  max-width: 600px;
+}
+.payment-policy ul li {
+  margin: 10px 0;
+}
+.pay-btn {
+  background: #ef4444;
+  border: none;
+  color: white;
+  padding: 12px 25px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.3s;
+}
+.pay-btn:hover {
+  background: #dc2626;
+}
+
+/* Plans */
+.choose-heading {
+  text-align: center;
+  margin: 20px 0 30px;
+  font-size: 1.8rem;
+}
+
+.plans-grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.plan-card {
+  background: #fff;
+  border: 2px solid #e5e7eb;
+  padding: 25px;
+  border-radius: 12px;
+  text-align: center;
+  transition: 0.3s;
+  position: relative;
+}
+.plan-card:hover {
+  transform: translateY(-5px);
+  border-color: #2563eb;
+}
+.plan-card.selected {
+  border-color: #2563eb;
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.2);
+}
+.plan-card.popular {
+  border-color: #f59e0b;
+}
+.plan-card .badge {
+  background: #f59e0b;
+  color: white;
+  font-size: 0.8rem;
+  padding: 5px 10px;
+  border-radius: 6px;
+  position: absolute;
+  top: -10px;
+  right: -10px;
+}
+.plan-card h3 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+.plan-card .price {
+  font-size: 1.2rem;
+  color: #2563eb;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+.plan-card ul {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 20px;
+}
+.plan-card ul li {
+  margin: 8px 0;
+}
+.choose-btn {
+  background: #2563eb;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.choose-btn:hover {
+  background: #1e40af;
+}
