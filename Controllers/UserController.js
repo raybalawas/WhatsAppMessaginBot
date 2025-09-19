@@ -1,4 +1,5 @@
 import messageModel from "../models/MessageModel.js";
+import statusModel from "../models/StatusModel.js";
 import userModel from "../models/usersModel.js";
 import { successResponse, errorResponse } from "../utils/response.js";
 import bcrypt from "bcrypt";
@@ -213,20 +214,30 @@ const UserView = async (req, res) => {
 const userdelete = async (req, res) => {
   try {
     const { id } = req.params;
+
+    // First, try to delete the user
     const deletedUser = await userModel.findByIdAndDelete(id);
-    // console.log(deletedUser);
+
     if (!deletedUser) {
       console.log("User not found or not allowed to delete!");
       return res
         .status(404)
         .json({ message: "User not found or not allowed to delete!" });
     }
-    return successResponse(res, "user deleted successfully!", 200);
+
+    // Cascade delete: delete all campaigns/messages/status linked to user
+    await Promise.all([
+      messageModel.deleteMany({ userId: id }),// all campaigns
+      statusModel.deleteMany({ userId: id }),// all status reports
+    ]);
+
+    return successResponse(res, "User and related campaigns deleted successfully!", 200);
   } catch (error) {
-    console.log(error);
+    console.error("❌ Error deleting user:", error);
     return errorResponse(res, "Server Error");
   }
 };
+
 
 const userUpdate = async (req, res) => {
   try {

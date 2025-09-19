@@ -153,6 +153,7 @@ function CampaignListPage() {
                 <th>User Mobile</th>
                 <th>Camp Message</th>
                 <th>Camp Video/Image etc.</th>
+                <th>Camp Mobile Numbers</th>
                 <th>Status</th>
                 <th>Action</th>
               </tr>
@@ -174,6 +175,19 @@ function CampaignListPage() {
                         rel="noreferrer"
                       >
                         View Creative
+                      </a>
+                    ) : (
+                      "N/A"
+                    )}
+                  </td>
+                  <td>
+                    {camp.csvFilePath ? (
+                      <a
+                        href={camp.csvFilePath}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Mobile Numbers
                       </a>
                     ) : (
                       "N/A"

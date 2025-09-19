@@ -553,9 +553,6 @@ const MessageSend = async (req, res) => {
       }
     }
 
-    // Clean up temp files
-    fs.unlinkSync(tempCsvPath);
-    if (designFileUrl) fs.unlinkSync(tempDesignPath);
     // Generate PDF report
     generatePdfReport(processed, tempPdfPath, message);
 
@@ -589,9 +586,10 @@ const MessageSend = async (req, res) => {
     //   }
     // }
     // Cleanup temp files
-    fs.unlinkSync(tempCsvPath);
-    if (designFileUrl) fs.unlinkSync(tempDesignPath);
-    fs.unlinkSync(tempPdfPath);
+    if (fs.existsSync(tempCsvPath)) fs.unlinkSync(tempCsvPath);
+    if (designFileUrl && fs.existsSync(tempDesignPath)) fs.unlinkSync(tempDesignPath);
+    if (fs.existsSync(tempPdfPath)) fs.unlinkSync(tempPdfPath);
+
     console.log("🎉 Campaign finished. Browser left open for next use.");
     return res.json({
       status: "success",

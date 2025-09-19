@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../pages/styles/Reports.css";
 import {
+  USER_DELETE_WITH_CAMPAIGN,
   USER_LIST_ENDPOINT,
   USER_PROFILE_UPDATE_ENDPOINT,
 } from "../../../utils/apiConfig";
@@ -96,7 +97,7 @@ function Clients() {
 
     try {
       const token = localStorage.getItem("authToken");
-      const res = await fetch(`${USER_LIST_ENDPOINT}/${userId}`, {
+      const res = await fetch(`${USER_DELETE_WITH_CAMPAIGN}/${userId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
