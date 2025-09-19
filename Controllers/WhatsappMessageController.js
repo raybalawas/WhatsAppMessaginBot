@@ -571,20 +571,20 @@ const MessageSend = async (req, res) => {
     // status update in messageModel
     const AuthUserId = req.params?.id;
     console.log(`users id from parameters: ${userId}`);
-    // const updateStatus = await messageModel.findByIdAndUpdate(AuthUserId, {
-    //   status: "completed",
-    // });
-    // if (!updateStatus) {
-    //   console.log("❌ Failed to update message status");
-    //   try {
-    //     return res
-    //       .status(500)
-    //       .json({ status: "error", message: "Failed to update message status" });
-    //   } catch (error) {
-    //     console.error("❌ Error sending failure response:", error.message);
-    //     return;
-    //   }
-    // }
+    const updateStatus = await messageModel.findByIdAndUpdate(AuthUserId, {
+      status: "completed",
+    });
+    if (!updateStatus) {
+      console.log("❌ Failed to update message status");
+      try {
+        return res
+          .status(500)
+          .json({ status: "error", message: "Failed to update message status" });
+      } catch (error) {
+        console.error("❌ Error sending failure response:", error.message);
+        return;
+      }
+    }
     // Cleanup temp files
     if (fs.existsSync(tempCsvPath)) fs.unlinkSync(tempCsvPath);
     if (designFileUrl && fs.existsSync(tempDesignPath)) fs.unlinkSync(tempDesignPath);
