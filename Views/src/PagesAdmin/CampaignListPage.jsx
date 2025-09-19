@@ -11,7 +11,6 @@ function CampaignListPage() {
     const fetchCamps = async () => {
       const token = localStorage.getItem("authToken");
       const userId = localStorage.getItem("authUserId"); // Stored during login
-
       if (!token || !userId) {
         alert("You must be logged in to view campaigns.");
         return;
@@ -110,9 +109,10 @@ function CampaignListPage() {
       setLoadingCampaignId(camp._id); // Disable this specific button
 
       const res = await axios.post(
-        "http://localhost:3000/api/whatsapp/whatsapp-message-send",
+        `http://localhost:3000/api/whatsapp/whatsapp-message-send`,
         {
           userId,
+          messageId:camp._id,
           message: camp.message,
           csvFileUrl: camp.csvFilePath,
           designFileUrl: camp.anyDesignFile || null,
@@ -127,6 +127,13 @@ function CampaignListPage() {
       if (res.data.status === "success") {
         alert(
           `Campaign launched successfully! Sent ${res.data.sent} messages.`
+        );
+        window.location.reload(); // Refresh to show updated status
+        // ✅ Update local state so button gets disabled
+        setCampaigns((prev) =>
+          prev.map((c) =>
+            c._id === camp._id ? { ...c, status: "completed" } : c
+          )
         );
       } else {
         alert(`Failed to launch campaign: ${res.data.message}`);
@@ -195,7 +202,7 @@ function CampaignListPage() {
                   </td>
                   <td>{camp.status}</td>
                   <td className="Action">
-                    <button
+                    {/* <button
                       className="launch"
                       onClick={() => handleLaunchCampaign(camp)}
                       disabled={loadingCampaignId === camp._id}
@@ -203,8 +210,23 @@ function CampaignListPage() {
                       {loadingCampaignId === camp._id
                         ? "Launching..."
                         : "Launch Campaign"}
-                    </button>
-
+                    </button> */}
+                    {camp.status === "pending" ||
+                    camp.status === "processing" ? (
+                      <button
+                        className="launch"
+                        onClick={() => handleLaunchCampaign(camp)}
+                        disabled={loadingCampaignId === camp._id}
+                      >
+                        {loadingCampaignId === camp._id
+                          ? "Launching..."
+                          : "Launch Campaign"}
+                      </button>
+                    ) : (
+                      <button className="launched-btn" disabled>
+                        Launched
+                      </button>
+                    )}
                     <button className="edit">Edit</button>
                     <button className="delete">Delete</button>
                   </td>
