@@ -128,15 +128,16 @@ const getCampaignsByUserId = async (req, res) => {
 const getReportsForUser = async (req, res) => {
   try {
     const userId = req.params.id;
-    const reports = await statusModel.find({ userId })
+    const reports = await statusModel.find({ userId }).populate("messageId")
       .sort({ createdAt: -1 });
-    // console.log(reports);
+    console.log(reports);
     if (!reports || reports.length === 0) {
       return res.status(400).json({
         message: "No reports found for this user.",
         data: [],
       });
     }
+    // console.log(`Reports for user ${userId}:`, reports);
     return res.status(200).json({
       message: "Reports fetched successfully!",
       data: reports,
@@ -173,6 +174,10 @@ const getCampaignsForUser = async (req, res) => {
     });
   }
 };
+
+
+
+
 export {
   userSubmitCampaign,
   getAllCampaigns,
@@ -180,5 +185,5 @@ export {
   deleteCampaign,
   getCampaignsByUserId,
   getReportsForUser,
-  getCampaignsForUser
+  getCampaignsForUser,
 };

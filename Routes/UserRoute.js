@@ -56,6 +56,8 @@ router.delete(
 router.delete("/delete-campaign/:id", checkAuth, checkAdmin, deleteCampaign);
 router.get("/get-camp-by-user-id/:id", checkAuth, checkAdmin, getCampaignsByUserId);
 router.get("/reports/:id", checkAuth, checkUser, getReportsForUser);
+
 router.get("/camp-status/:id", checkAuth, checkUser, getCampaignsForUser);
 
 export default router;
+

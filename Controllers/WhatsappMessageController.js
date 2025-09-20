@@ -106,52 +106,91 @@ const formatPhone = (phone) => {
   return digits;
 };
 
-/* ---------- PDF Report Generator ---------- */
-const generatePdfReport = (processed, outputPath, message) => {
-  const doc = new PDFDocument({ margin: 40 });
-  doc.pipe(fs.createWriteStream(outputPath));
 
-  // Title
-  doc.fontSize(22).text("📊 WhatsApp Campaign Report", { align: "center" });
-  doc.moveDown();
-
-  // Campaign details
-  doc.fontSize(14).text(`Message: ${message}`);
-  doc.text(`Date: ${new Date().toLocaleString()}`);
-  doc.moveDown();
-
-  // Summary
+/* ---------------- HTML Report Generator ---------------- */
+const generateHtmlReport = (processed, message) => {
   const sent = processed.filter((p) => p.status === "sent").length;
   const invalid = processed.filter((p) => p.status === "invalid").length;
   const failed = processed.filter((p) => p.status === "error").length;
 
-  doc.fontSize(12).text(`Total: ${processed.length}`);
-  doc.text(`✅ Sent: ${sent}`);
-  doc.text(`❌ Failed: ${failed}`);
-  doc.text(`📵 Invalid: ${invalid}`);
-  doc.moveDown();
+  const timestamp = new Date().toLocaleString();
 
-  // Table Header
-  doc.fontSize(14).text("Details:", { underline: true });
-  doc.moveDown(0.5);
+  return `
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>WhatsApp Campaign Summary</title>
+    <style>
+      body { font-family: Arial, sans-serif; background: #ece5dd; margin: 20px; padding: 0; }
+      .container { max-width: 800px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; }
+      h1 { color: #075e54; }
+      .summary { margin-bottom: 20px; }
+      .summary p { margin: 6px 0; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
+      th { background: #075e54; color: white; }
+      tr:nth-child(even) { background: #f9f9f9; }
+      .sent { color: green; font-weight: bold; }
+      .failed { color: red; font-weight: bold; }
+      .invalid { color: orange; font-weight: bold; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>WhatsApp Campaign Summary</h1>
+      <div class="summary">
+        <p><strong>Message:</strong> ${message}</p>
+        <p><strong>Date:</strong> ${timestamp}</p>
+        <p><strong>Total Numbers:</strong> ${processed.length}</p>
+        <p><strong>✅ Sent:</strong> ${sent}</p>
+        <p><strong>❌ Failed:</strong> ${failed}</p>
+        <p><strong>📵 Invalid:</strong> ${invalid}</p>
+      </div>
 
-  // Table Rows
-  processed.forEach((item, i) => {
-    let statusIcon =
-      item.status === "sent"
-        ? "✅"
-        : item.status === "invalid"
-          ? "📵"
-          : "❌";
-    doc
-      .fontSize(12)
-      .text(`${i + 1}. ${item.phone} - ${statusIcon} ${item.status}`);
-  });
-
-  doc.end();
+      <table>
+        <thead>
+          <tr>
+            <th>Phone Number</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${processed
+      .map(
+        (p) =>
+          `<tr>
+                  <td>${p.phone}</td>
+                  <td class="${p.status}">${p.status}</td>
+                </tr>`
+      )
+      .join("")}
+        </tbody>
+      </table>
+    </div>
+  </body>
+  </html>`;
 };
 
-/* ---------- Campaign Sender ---------- */
+/* ---------------- PDF Report Generator ---------------- */
+const generatePdfReport = async (processed, outputPath, message) => {
+  const htmlContent = generateHtmlReport(processed, message);
+
+  const browser = await puppeteer.launch({ headless: "new" });
+  const page = await browser.newPage();
+
+  await page.setContent(htmlContent, { waitUntil: "networkidle0" });
+  await page.pdf({
+    path: outputPath,
+    format: "A4",
+    printBackground: true,
+  });
+
+  await browser.close();
+};
+
+/* ---------------- Campaign Sender ---------------- */
 const MessageSend = async (req, res) => {
   try {
     const { userId, messageId, message, csvFileUrl, designFileUrl } = req.body;
@@ -166,7 +205,7 @@ const MessageSend = async (req, res) => {
     // Download files temporarily
     const timestamp = Date.now();
     const tempCsvPath = path.join("uploads", `temp-csv-${timestamp}.csv`);
-    const tempPdfPath = path.join("uploads", `report-${timestamp}.pdf`);
+    const tempPdfPath = path.join("uploads", `report-${messageId}.pdf`);
 
     await downloadFile(csvFileUrl, tempCsvPath);
 
@@ -187,7 +226,8 @@ const MessageSend = async (req, res) => {
       ? await cloudinary.uploader.upload(tempDesignPath, {
         folder: "whatsapp_designs",
         resource_type: "auto",
-      }) : null;
+      })
+      : null;
 
     const csvUrl = uploadCsv.secure_url;
     const designUrl = uploadDesign?.secure_url || null;
@@ -234,9 +274,7 @@ const MessageSend = async (req, res) => {
         // Confirm text sent
         await page.waitForSelector("div.message-out", { timeout: 10000 });
         processed.push({ phone, status: "sent" });
-        randomSleep();
-        console.log(`sending message awaiting for seconds ${randomSleep()}`);
-
+        await randomSleep();
 
         if (tempDesignPath) {
           try {
@@ -253,7 +291,6 @@ const MessageSend = async (req, res) => {
 
             await sleep(4000);
 
-            // Try Send button
             let sendFileBtn = await page.$('button[aria-label="Send"]');
             if (!sendFileBtn) {
               sendFileBtn = await page.$('span[data-icon="send"]');
@@ -285,44 +322,55 @@ const MessageSend = async (req, res) => {
         processed.push({ phone, status: "error" });
       }
     }
-    // Generate PDF report
-    generatePdfReport(processed, tempPdfPath, message);
+
+    // Generate PDF report with HTML template
+    await generatePdfReport(processed, tempPdfPath, message);
 
     const uploadReport = await cloudinary.uploader.upload(tempPdfPath, {
       folder: "whatsapp_reports",
       resource_type: "raw",
+      format: "pdf",
+      public_id: `report-${messageId}`
     });
-    const reportUrl = uploadReport.secure_url;
+    console.log("Report uploaded && the url is:", uploadReport.secure_url);
+    // const reportUrl = uploadReport.secure_url;
+    // const reportUrl = `${uploadReport.secure_url}?fl_attachment`;
+    // force download with filename
+    const fileName = `report-${messageId}.pdf`;
+    const downloadUrl = `${uploadReport.secure_url}?fl_attachment=${fileName}`;
+    // const reportUrl = cloudinary.url(uploadReport.public_id, {
+    //   resource_type: "raw",
+    //   format: "pdf",
+    //   attachment: true,               // 👈 Force download
+    //   filename_override: `report-${messageId}.pdf`
+    // });
+
+    // const reportUrl = cloudinary.url(uploadReport.secure_url, {
+    //   resource_type: "raw",
+    //   format: "pdf",
+    //   flags: fileName,  // 👈 forces download + custom filename
+    // });
 
     // Save status
     await statusModel.create({
       userId,
+      messageId: messageId,
       message,
-      generatedFile: reportUrl,
+      generatedFile: downloadUrl,
     });
-
-    // ⚡ Ensure Message Table Update
-    console.log(messageId);
-    console.log("⚡ Updating Message status in DB...");
-    if (!messageId) {
-      console.warn("⚠️ No Message ID provided in params, skipping update.");
-    }
-    console.log(`📌 Updating Message record with ID: ${messageId}`);
-
-    const updateStatus = await messageModel.findByIdAndUpdate(
-      messageId,
-      {
-        status: "completed",
-        numbersCount: processed.length,
-        sentCount: processed.filter((p) => p.status === "sent").length,
-      },
-      { new: true }
-    );
-
-    if (!updateStatus) {
-      console.error("❌ Failed to update Message status in DB");
-    } else {
-      console.log("✅ Message record updated:", updateStatus._id);
+    console.log("Download URL                 :", downloadUrl);
+    // Update Message Table
+    console.log(`📌 Updating Message record with ID: ${downloadUrl}`);
+    if (messageId) {
+      await messageModel.findByIdAndUpdate(
+        messageId,
+        {
+          status: "completed",
+          numbersCount: processed.length,
+          sentCount: processed.filter((p) => p.status === "sent").length,
+        },
+        { new: true }
+      );
     }
 
     // Cleanup
@@ -331,13 +379,14 @@ const MessageSend = async (req, res) => {
       fs.unlinkSync(tempDesignPath);
     if (fs.existsSync(tempPdfPath)) fs.unlinkSync(tempPdfPath);
 
-    console.log("🎉 Campaign finished. Browser left open for next use.");
+    console.log("🎉 Campaign finished.");
     return res.json({
       status: "success",
       total: processed.length,
       sent: processed.filter((p) => p.status === "sent").length,
       invalid: processed.filter((p) => p.status === "invalid").length,
       failed: processed.filter((p) => p.status === "error").length,
+      report: downloadUrl,
     });
   } catch (err) {
     console.error("❌ Error in MessageSend:", err);

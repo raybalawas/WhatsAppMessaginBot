@@ -5,7 +5,7 @@ function Reports() {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [expanded, setExpanded] = useState(null); // for expanding long messages
+  const [expanded, setExpanded] = useState(null);
 
   useEffect(() => {
     const fetchReports = async () => {
@@ -33,7 +33,7 @@ function Reports() {
         const data = await res.json();
 
         if (res.ok) {
-          setReports(data.data); // API gives { message, data: [...] }
+          setReports(data.data);
         } else {
           setError(data.message || "Failed to fetch reports.");
         }
@@ -49,6 +49,15 @@ function Reports() {
 
   if (loading) return <p>Loading reports...</p>;
   if (error) return <p className="error">{error}</p>;
+  
+  const handleDownload = async (url, fileName) => {
+    const res = await fetch(url, { method: "GET" });
+    const blob = await res.blob();
+    const link = document.createElement("a");
+    link.href = window.URL.createObjectURL(blob);
+    link.download = fileName;
+    link.click();
+  };
 
   return (
     <div className="main-content">
@@ -68,18 +77,10 @@ function Reports() {
             <tbody>
               {reports.map((report) => (
                 <tr key={report._id}>
-                  {/* Report ID with copy button */}
                   <td data-label="ID">
                     <span>{report._id}</span>
-                    {/* <button
-                      className="copy-btn"
-                      onClick={() => navigator.clipboard.writeText(report._id)}
-                    >
-                      📋 copy id
-                    </button> */}
                   </td>
 
-                  {/* Expandable Message */}
                   <td data-label="Message">
                     {expanded === report._id ? (
                       <>
@@ -110,21 +111,24 @@ function Reports() {
                     )}
                   </td>
 
-                  {/* Created At */}
                   <td data-label="Created At">
                     {new Date(report.createdAt).toLocaleString()}
                   </td>
 
-                  {/* Download Report */}
                   <td data-label="Download Report">
                     {report.generatedFile ? (
-                      <a
-                        href={report.generatedFile}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      // <a href={report.generatedFile}>⬇️ Download Report</a>
+                      <button
+                        onClick={() =>
+                          handleDownload(
+                            report.generatedFile,
+                            `report-${report.messageId._id}.pdf`
+                            // report._id
+                          )
+                        }
                       >
-                        ⬇️ Download CSV
-                      </a>
+                        ⬇️ Download Report
+                      </button>
                     ) : (
                       <span>No file</span>
                     )}
