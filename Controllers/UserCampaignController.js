@@ -128,28 +128,53 @@ const getCampaignsByUserId = async (req, res) => {
 const getReportsForUser = async (req, res) => {
   try {
     const userId = req.params.id;
-    const reports = await statusModel.find({ userId }).populate("messageId")
-      .sort({ createdAt: -1 });
-    console.log(reports);
-    if (!reports || reports.length === 0) {
-      return res.status(400).json({
-        message: "No reports found for this user.",
-        data: [],
-      });
-    }
-    // console.log(`Reports for user ${userId}:`, reports);
+
+    // 1. Fetch all reports with populated message details
+    const reports = await statusModel
+      .find({ userId })
+      .populate("messageId")
+      .lean();
+
+    // 2. Fetch all messages of the user
+    const messages = await messageModel.find({ userId }).lean();
+
+    // 3. Find which messages already have reports
+    const reportedMessageIds = reports.map(
+      (r) => r.messageId && r.messageId._id.toString()
+    );
+
+    // 4. Messages without a report → make "virtual report objects"
+    const missingReports = messages
+      .filter((msg) => !reportedMessageIds.includes(msg._id.toString()))
+      .map((msg) => ({
+        _id: null, // no status record yet
+        userId: msg.userId,
+        messageId: msg, // attach message object
+        message: msg.message,
+        generatedFile: null,
+        status: msg.status || "pending", // take from messageModel
+        numbersCount: msg.numbersCount,
+        sentCount: msg.sentCount,
+        createdAt: msg.createdAt,
+        updatedAt: msg.updatedAt,
+      }));
+
+    // 5. Merge reports + missingReports
+    const allData = [...reports, ...missingReports].sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    );
+
     return res.status(200).json({
-      message: "Reports fetched successfully!",
-      data: reports,
+      message: "Reports & messages fetched successfully!",
+      data: allData,
     });
   } catch (error) {
-    console.log(`Error while fetching reports for user:${error.message}`);
+    console.error(`Error while fetching reports & messages: ${error.message}`);
     return res.status(500).json({
-      message: "Server error! try again.",
+      message: "Server Error! Please try again.",
     });
   }
 };
-
 const getCampaignsForUser = async (req, res) => {
   try {
     const userId = req.params.id;
@@ -174,9 +199,6 @@ const getCampaignsForUser = async (req, res) => {
     });
   }
 };
-
-
-
 
 export {
   userSubmitCampaign,

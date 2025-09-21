@@ -3,13 +3,13 @@ import axios from "axios";
 import "./styles/StatusPage.css";
 
 function StatusPage() {
-  const [campaigns, setCampaigns] = useState([]);
+  const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [expanded, setExpanded] = useState(null); // 👈 track expanded row
+  const [expanded, setExpanded] = useState(null);
 
   useEffect(() => {
-    const fetchCampaigns = async () => {
+    const fetchReports = async () => {
       try {
         const token = localStorage.getItem("authToken");
         const userId = localStorage.getItem("authUserId");
@@ -21,7 +21,7 @@ function StatusPage() {
         }
 
         const res = await axios.get(
-          `http://localhost:3000/api/users/camp-status/${userId}`,
+          `http://localhost:3000/api/users/reports/${userId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -29,53 +29,66 @@ function StatusPage() {
           }
         );
 
-        if (res.data && res.data.Data) {
-          setCampaigns(res.data.Data);
+        if (res.data && res.data.data) {
+          setReports(res.data.data);
         } else {
-          setError(res.data.Data.Message, "No campaigns found.");
+          setError("No reports found.");
         }
       } catch (err) {
         console.error(err);
-        setError("Failed to fetch campaigns.");
+        setError("Failed to fetch reports.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCampaigns();
+    fetchReports();
   }, []);
+
+
+  const handleDownload = async (url, fileName) => {
+    const res = await fetch(url, { method: "GET" });
+    const blob = await res.blob();
+    const link = document.createElement("a");
+    link.href = window.URL.createObjectURL(blob);
+    link.download = fileName;
+    link.click();
+  };
 
   return (
     <div className="status-container">
-      <h1>🚦 Campaign Status</h1>
+      <a href="/campaign">Add Campaigns</a>
 
-      {loading && <p>Loading campaigns...</p>}
+      <h1>🚦 Campaign Reports</h1>
+
+      {loading && <p>Loading reports...</p>}
       {error && <p className="error">{error}</p>}
+      {!loading && !error && reports.length === 0 && <p>No reports found...</p>}
 
-      {!loading && !error && campaigns.length === 0 && (
-        <p>No campaigns found.</p>
-      )}
-
-      {!loading && !error && campaigns.length > 0 && (
+      {!loading && !error && reports.length > 0 && (
         <div className="status-table-container">
           <table className="status-table">
             <thead>
               <tr>
-                <th>ID</th>
+                <th>#</th>
                 <th>Message</th>
                 <th>CSV File</th>
                 <th>Design File</th>
                 <th>Status</th>
                 <th>Numbers Count</th>
                 <th>Sent Count</th>
-                <th>Created At</th>
+                <th>Campaign Created</th>
+                <th>Report Created</th>
+                <th>Download Report</th>
               </tr>
             </thead>
             <tbody>
-              {campaigns.map((item, index) => (
+              {reports.map((item, index) => (
                 <tr key={item._id}>
                   <td>{index + 1}</td>
-                  <td data-label="Message" className="message-col">
+
+                  {/* Message with expand/collapse */}
+                  <td className="message-col">
                     {expanded === item._id ? (
                       <>
                         <p>{item.message}</p>
@@ -104,10 +117,12 @@ function StatusPage() {
                       </>
                     )}
                   </td>
+
+                  {/* CSV File */}
                   <td>
-                    {item.csvFilePath ? (
+                    {item.messageId?.csvFilePath ? (
                       <a
-                        href={item.csvFilePath}
+                        href={item.messageId.csvFilePath}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
@@ -117,10 +132,12 @@ function StatusPage() {
                       "—"
                     )}
                   </td>
+
+                  {/* Design File */}
                   <td>
-                    {item.anyDesignFile ? (
+                    {item.messageId?.anyDesignFile ? (
                       <a
-                        href={item.anyDesignFile}
+                        href={item.messageId.anyDesignFile}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
@@ -130,22 +147,62 @@ function StatusPage() {
                       "—"
                     )}
                   </td>
+
+                  {/* Status */}
                   <td>
                     <span
-                      className={`status ${item.status
-                        .toLowerCase()
+                      className={`status ${item.messageId?.status
+                        ?.toLowerCase()
                         .replace(" ", "-")}`}
                     >
-                      {item.status}
+                      {item.messageId?.status || "—"}
                     </span>
                   </td>
-                  <td>{item.numbersCount}</td>
-                  <td>{item.sentCount}</td>
+
+                  {/* Numbers Count */}
+                  <td>{item.messageId?.numbersCount ?? "—"}</td>
+
+                  {/* Sent Count */}
+                  <td>{item.messageId?.sentCount ?? "—"}</td>
+
+                  {/* Campaign Created */}
+                  <td>
+                    {item.messageId?.createdAt
+                      ? new Date(item.messageId.createdAt).toLocaleString(
+                        "en-IN",
+                        {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                        }
+                      )
+                      : "—"}
+                  </td>
+
+                  {/* Report Created */}
                   <td>
                     {new Date(item.createdAt).toLocaleString("en-IN", {
                       dateStyle: "medium",
                       timeStyle: "short",
                     })}
+                  </td>
+
+                  {/* Download Report */}
+                  <td>
+                    {item.generatedFile ? (
+                      <button
+                        onClick={() =>
+                          handleDownload(
+                            item.generatedFile,
+                            // `report-${item.messageId?._id || item._id}.pdf`
+                            `report-${item.messageId._id}.pdf`
+                          )
+                        }
+                      >
+                        ⬇️ Download
+                      </button>
+                    ) : (
+                      <span>No file</span>
+                    )}
                   </td>
                 </tr>
               ))}

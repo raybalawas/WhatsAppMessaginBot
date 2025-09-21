@@ -91,17 +91,17 @@ function Navbar() {
                   Dashboard
                 </p>
               </li>
-              <li>
+              {/* <li>
                 <p onClick={() => handleProtectedLink("/campaign")}>
                   Campaigns
                 </p>
-              </li>
+              </li> */}
               <li>
-                <p onClick={() => handleProtectedLink("/status")}>Status</p>
+                <p onClick={() => handleProtectedLink("/status")}>Your Campaigns</p>
               </li>
-              <li>
+              {/* <li>
                 <p onClick={() => handleProtectedLink("/reports")}>Reports</p>
-              </li>
+              </li> */}
               <li>
                 <p onClick={() => handleProtectedLink("/setting")}>Settings</p>
               </li>
