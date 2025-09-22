@@ -29,8 +29,8 @@ function StatusPage() {
           }
         );
 
-        if (res.data && res.data.data) {
-          setReports(res.data.data);
+        if (res.data && res.data.reports) {
+          setReports(res.data.reports);
         } else {
           setError("No reports found.");
         }
@@ -44,7 +44,6 @@ function StatusPage() {
 
     fetchReports();
   }, []);
-
 
   const handleDownload = async (url, fileName) => {
     const res = await fetch(url, { method: "GET" });
@@ -120,9 +119,9 @@ function StatusPage() {
 
                   {/* CSV File */}
                   <td>
-                    {item.messageId?.csvFilePath ? (
+                    {item.csvFilePath ? (
                       <a
-                        href={item.messageId.csvFilePath}
+                        href={item.csvFilePath}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
@@ -135,9 +134,9 @@ function StatusPage() {
 
                   {/* Design File */}
                   <td>
-                    {item.messageId?.anyDesignFile ? (
+                    {item.anyDesignFile ? (
                       <a
-                        href={item.messageId.anyDesignFile}
+                        href={item.anyDesignFile}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
@@ -151,41 +150,42 @@ function StatusPage() {
                   {/* Status */}
                   <td>
                     <span
-                      className={`status ${item.messageId?.status
+                      className={`status ${item.status
                         ?.toLowerCase()
                         .replace(" ", "-")}`}
                     >
-                      {item.messageId?.status || "—"}
+                      {item.status || "—"}
                     </span>
                   </td>
 
                   {/* Numbers Count */}
-                  <td>{item.messageId?.numbersCount ?? "—"}</td>
+                  <td>{item.numbersCount ?? "—"}</td>
 
                   {/* Sent Count */}
-                  <td>{item.messageId?.sentCount ?? "—"}</td>
+                  <td>{item.sentCount ?? "—"}</td>
 
                   {/* Campaign Created */}
                   <td>
-                    {item.messageId?.createdAt
-                      ? new Date(item.messageId.createdAt).toLocaleString(
-                        "en-IN",
-                        {
+                    {item.createdAt
+                      ? new Date(item.createdAt).toLocaleString("en-IN", {
                           dateStyle: "medium",
                           timeStyle: "short",
-                        }
-                      )
+                        })
                       : "—"}
                   </td>
 
                   {/* Report Created */}
                   <td>
-                    {new Date(item.createdAt).toLocaleString("en-IN", {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    })}
+                    {item.StatusId?.createdAt
+                      ? new Date(item.StatusId?.createdAt).toLocaleString(
+                          "en-IN",
+                          {
+                            dateStyle: "medium",
+                            timeStyle: "short",
+                          }
+                        )
+                      : "—"}
                   </td>
-
                   {/* Download Report */}
                   <td>
                     {item.generatedFile ? (
@@ -193,8 +193,8 @@ function StatusPage() {
                         onClick={() =>
                           handleDownload(
                             item.generatedFile,
-                            // `report-${item.messageId?._id || item._id}.pdf`
-                            `report-${item.messageId._id}.pdf`
+                            // `report-${item.StatusId?._id || item._id}.pdf`
+                            `report-${item.StatusId._id}.pdf`
                           )
                         }
                       >

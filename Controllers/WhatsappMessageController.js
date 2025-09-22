@@ -314,9 +314,9 @@ const MessageSend = async (req, res) => {
             console.error(`❌ Failed to send creative to ${phone}:`, fileErr.message);
             processed.push({ phone, status: "file_error" });
           }
+          await randomSleep();
         }
 
-        await randomSleep();
       } catch (err) {
         console.error(`❌ Error for ${phone}: ${err.message}`);
         processed.push({ phone, status: "error" });

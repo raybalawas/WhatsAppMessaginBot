@@ -112,7 +112,7 @@ function CampaignListPage() {
         `http://localhost:3000/api/whatsapp/whatsapp-message-send`,
         {
           userId,
-          messageId:camp._id,
+          messageId: camp._id,
           message: camp.message,
           csvFileUrl: camp.csvFilePath,
           designFileUrl: camp.anyDesignFile || null,
@@ -144,11 +144,41 @@ function CampaignListPage() {
     }
   };
 
+  const handleDeleteCampaign = async () => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      alert("You must be logged in to perform this action.");
+      return;
+    }
+
+    try {
+      const res = await axios.delete(
+        "http://localhost:3000/api/users/delete-all-campaigns",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (res.status === 200) {
+        alert("All campaigns deleted successfully!");
+        window.location.reload(); // Refresh to show updated status
+        setCampaigns([]); // Clear state since everything is deleted
+      } else {
+        alert(`Failed to delete campaigns: ${res.data.message}`);
+      }
+    } catch (error) {
+      console.error("Delete Campaign Error:", error.response || error.message);
+      alert("Server error. Please try again later.");
+    }
+  };
+
   return (
     <div className="main-content">
       <div className="reports-container">
         <h1>📊 Merchants wise Campaigns</h1>
-
+        <button onClick={handleDeleteCampaign}>Delete All Campaigns</button>
         <div className="reports-table-container">
           <table className="reports-table">
             <thead>
