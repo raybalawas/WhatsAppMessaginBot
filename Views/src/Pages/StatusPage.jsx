@@ -176,8 +176,8 @@ function StatusPage() {
 
                   {/* Report Created */}
                   <td>
-                    {item.StatusId?.createdAt
-                      ? new Date(item.StatusId?.createdAt).toLocaleString(
+                    {item.statusId?.createdAt
+                      ? new Date(item.statusId?.createdAt).toLocaleString(
                           "en-IN",
                           {
                             dateStyle: "medium",
@@ -188,13 +188,13 @@ function StatusPage() {
                   </td>
                   {/* Download Report */}
                   <td>
-                    {item.generatedFile ? (
+                    {item.statusId?.generatedFile ? (
                       <button
                         onClick={() =>
                           handleDownload(
-                            item.generatedFile,
+                            item.statusId?.generatedFile,
                             // `report-${item.StatusId?._id || item._id}.pdf`
-                            `report-${item.StatusId._id}.pdf`
+                            `report-${item.statusId?._id}.pdf`
                           )
                         }
                       >

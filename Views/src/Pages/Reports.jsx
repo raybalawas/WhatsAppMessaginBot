@@ -22,18 +22,17 @@ function Reports() {
         const res = await fetch(
           `http://localhost:3000/api/users/reports/${userId}`,
           {
+            headers: { Authorization: `Bearer ${token}` },
             method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
           }
         );
 
         const data = await res.json();
+        console.log("Fetched reports:", data);
 
         if (res.ok) {
-          setReports(data.data);
+          // setReports(data.data || []);
+          setReports(data.reports || []);
         } else {
           setError(data.message || "Failed to fetch reports.");
         }
@@ -49,92 +48,117 @@ function Reports() {
 
   if (loading) return <p>Loading reports...</p>;
   if (error) return <p className="error">{error}</p>;
-  
+
   const handleDownload = async (url, fileName) => {
-    const res = await fetch(url, { method: "GET" });
-    const blob = await res.blob();
-    const link = document.createElement("a");
-    link.href = window.URL.createObjectURL(blob);
-    link.download = fileName;
-    link.click();
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to download report");
+      const blob = await res.blob();
+      const link = document.createElement("a");
+      link.href = window.URL.createObjectURL(blob);
+      link.download = fileName;
+      link.click();
+    } catch (err) {
+      alert("Download failed: " + err.message);
+    }
   };
 
   return (
     <div className="main-content">
       <div className="reports-container">
-        <h1>📊 Reports</h1>
+        <h1>📊 Campaign Reportss</h1>
 
         <div className="reports-table-container">
           <table className="reports-table">
             <thead>
               <tr>
-                <th>ID</th>
+                <th>S.no.</th>
                 <th>Message</th>
+                <th>Status</th>
                 <th>Created At</th>
                 <th>Download Report</th>
               </tr>
             </thead>
             <tbody>
-              {reports.map((report) => (
-                <tr key={report._id}>
-                  <td data-label="ID">
-                    <span>{report._id}</span>
-                  </td>
-
-                  <td data-label="Message">
-                    {expanded === report._id ? (
-                      <>
-                        <p>{report.message}</p>
-                        <a
-                          className="toggle-btn"
-                          onClick={() => setExpanded(null)}
-                        >
-                          Show Less ▲
-                        </a>
-                      </>
-                    ) : (
-                      <>
-                        <p>
-                          {report.message.length > 100
-                            ? report.message.substring(0, 100) + "..."
-                            : report.message}
-                        </p>
-                        {report.message.length > 100 && (
-                          <a
-                            className="toggle-btn"
-                            onClick={() => setExpanded(report._id)}
-                          >
-                            Show More ▼
-                          </a>
-                        )}
-                      </>
-                    )}
-                  </td>
-
-                  <td data-label="Created At">
-                    {new Date(report.createdAt).toLocaleString()}
-                  </td>
-
-                  <td data-label="Download Report">
-                    {report.generatedFile ? (
-                      // <a href={report.generatedFile}>⬇️ Download Report</a>
-                      <button
-                        onClick={() =>
-                          handleDownload(
-                            report.generatedFile,
-                            `report-${report.messageId._id}.pdf`
-                            // report._id
-                          )
-                        }
-                      >
-                        ⬇️ Download Report
-                      </button>
-                    ) : (
-                      <span>No file</span>
-                    )}
-                  </td>
+              {reports.length === 0 ? (
+                <tr>
+                  <td colSpan="5">No reports found.</td>
                 </tr>
-              ))}
+              ) : (
+                reports.map((report, index) => {
+                  const status = report.status || "pending";
+                  const statusData = report.statusId || {};
+                  const createdAt =
+                    statusData.createdAt || report.createdAt || null;
+
+                  return (
+                    <tr key={report._id}>
+                      <td>{index + 1}</td>
+
+                      <td data-label="Message">
+                        {expanded === report._id ? (
+                          <>
+                            <p>{report.message || "No message"}</p>
+                            <button
+                              className="toggle-btn"
+                              onClick={() => setExpanded(null)}
+                            >
+                              Show Less ▲
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <p>
+                              {report.message?.length > 80
+                                ? report.message.substring(0, 80) + "..."
+                                : report.message || "No message"}
+                            </p>
+                            {report.message?.length > 80 && (
+                              <button
+                                className="toggle-btn"
+                                onClick={() => setExpanded(report._id)}
+                              >
+                                Show More ▼
+                              </button>
+                            )}
+                          </>
+                        )}
+                      </td>
+
+                      <td>
+                        <span
+                          className={`status-badge ${status.toLowerCase()}`}
+                        >
+                          {status}
+                        </span>
+                      </td>
+
+                      <td>
+                        {createdAt
+                          ? new Date(createdAt).toLocaleString()
+                          : "N/A"}
+                      </td>
+
+                      <td>
+                        {statusData.generatedFile ? (
+                          <button
+                            onClick={() =>
+                              handleDownload(
+                                statusData.generatedFile,
+                                `report-${statusData._id}.pdf`
+                              )
+                            }
+                          >
+                            ⬇️ Download
+                          </button>
+                        ) : (
+                          <span>No file</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>

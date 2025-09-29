@@ -191,3 +191,34 @@
   cursor: not-allowed;
   opacity: 0.7;
 }
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-badge.pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status-badge.processing {
+  background: #cce5ff;
+  color: #004085;
+}
+
+.status-badge.completed {
+  background: #d4edda;
+  color: #155724;
+}
+
+.toggle-btn {
+  background: none;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+  margin-top: 4px;
+  font-size: 12px;
+}

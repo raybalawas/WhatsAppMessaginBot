@@ -332,7 +332,7 @@ const MessageSend = async (req, res) => {
       format: "pdf",
       public_id: `report-${messageId}`
     });
-    console.log("Report uploaded && the url is:", uploadReport.secure_url);
+    // console.log("Report uploaded && the url is:", uploadReport.secure_url);
     // const reportUrl = uploadReport.secure_url;
     // const reportUrl = `${uploadReport.secure_url}?fl_attachment`;
     // force download with filename
@@ -352,19 +352,21 @@ const MessageSend = async (req, res) => {
     // });
 
     // Save status
-    await statusModel.create({
+    const statusDocs = await statusModel.create({
       userId,
       messageId: messageId,
       message,
       generatedFile: downloadUrl,
     });
-    console.log("Download URL                 :", downloadUrl);
+    // console.log("Download URL                 :", downloadUrl);
     // Update Message Table
     console.log(`📌 Updating Message record with ID: ${downloadUrl}`);
+    console.log("status ki id jo messagemodel me store hogi:", statusDocs._id);
     if (messageId) {
       await messageModel.findByIdAndUpdate(
         messageId,
         {
+          statusId: statusDocs._id,
           status: "completed",
           numbersCount: processed.length,
           sentCount: processed.filter((p) => p.status === "sent").length,
@@ -372,7 +374,8 @@ const MessageSend = async (req, res) => {
         { new: true }
       );
     }
-
+    if(!messageId) console.log("⚠️ No messageId provided to update record.");
+    console.log("✅ Message record updated.");
     // Cleanup
     if (fs.existsSync(tempCsvPath)) fs.unlinkSync(tempCsvPath);
     if (tempDesignPath && fs.existsSync(tempDesignPath))

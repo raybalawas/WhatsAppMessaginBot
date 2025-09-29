@@ -134,10 +134,6 @@ const getReportsForUser = async (req, res) => {
       .populate({
         path: "statusId",       // pull in Status document
         model: "Status",
-        populate: {
-          path: "messageId",    // inside Status, pull in Message again if needed
-          model: "Message",
-        },
       })
       .sort({ createdAt: -1 });
 
