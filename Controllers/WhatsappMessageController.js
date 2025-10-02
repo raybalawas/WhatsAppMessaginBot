@@ -204,8 +204,8 @@ const MessageSend = async (req, res) => {
 
     // Download files temporarily
     const timestamp = Date.now();
-    // const tempCsvPath = path.join("uploads", `temp-csv-${timestamp}.csv`);
-    // const tempPdfPath = path.join("uploads", `report-${messageId}.pdf`);
+    const tempCsvPath = path.join("uploads", `temp-csv-${timestamp}.csv`);
+    const tempPdfPath = path.join("uploads", `report-${messageId}.pdf`);
 
     await downloadFile(csvFileUrl, tempCsvPath);
 
