@@ -11,18 +11,19 @@ import WhatsAppRoutes from "./Routes/WhatsappMessageRoute.js";
 const app = e();
 app.use(e.json());
 
-app.use(
-  cors({
-    origin: [
-      "http://localhost:5173",
-      "https://capable-bubblegum-c45fb0.netlify.app"   // put your final Netlify URL here
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true, // ✅ allowed now since we’re not using "*"
-  })
-);
+// app.use(
+//   cors({
+//     origin: [
+//       "http://localhost:5173",
+//       "https://capable-bubblegum-c45fb0.netlify.app"   // put your final Netlify URL here
+//     ],
+//     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+//     allowedHeaders: ["Content-Type", "Authorization"],
+//     credentials: true, // ✅ allowed now since we’re not using "*"
+//   })
+// );
 
+app.use(cors({ origin: "*", methods: ["GET", "POST", "PUT", "DELETE", "PATCH"] }));
 
 
 // ✅ Handle OPTIONS requests
