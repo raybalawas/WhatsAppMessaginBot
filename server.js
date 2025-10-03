@@ -39,5 +39,5 @@ const PORT = process.env.PORT ?? 5000;
 
 app.listen(PORT, () => {
   // console.log(`server is started on port:http://localhost:${PORT}`);
-  console.log(`server is started on port:https://68da870ab842ae523a1b368c--capable-bubblegum-c45fb0.netlify.app:${PORT}`);
+  console.log(`server is started on port:${PORT}`);
 });
