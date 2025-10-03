@@ -13,18 +13,16 @@ app.use(e.json());
 
 app.use(
   cors({
-    // origin: "http://localhost:5173",
-    // origin: "*", // your React app URL
     origin: [
-      "*",
-      // "https://68da870ab842ae523a1b368c--capable-bubblegum-c45fb0.netlify.app",
-      "http://localhost:5173"
+      "http://localhost:5173",
+      "https://capable-bubblegum-c45fb0.netlify.app"   // put your final Netlify URL here
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true, // ✅ allow cookies / auth headers
+    credentials: true, // ✅ allowed now since we’re not using "*"
   })
 );
+
 
 
 // ✅ Handle OPTIONS requests

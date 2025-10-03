@@ -1,5 +1,6 @@
 import e from "express";
 const router = e.Router();
+import multer from "multer";
 
 import {
   Signup,
@@ -23,9 +24,8 @@ import {
   deleteCampaign,
   getCampaignsByUserId,
   getReportsForUser,
-  // getCampaignsForUser,
 } from "../Controllers/UserCampaignController.js";
-import multer from "multer";
+  // getCampaignsForUser,
 // const upload = multer({ dest: "uploads/" }); // temp folder
 import upload from "../Middlewares/upload.js";
 
