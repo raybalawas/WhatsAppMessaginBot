@@ -1,3 +1,6 @@
+import e from "express";
+const router = e.Router();
+
 import {
   Signup,
   Signin,
@@ -8,7 +11,6 @@ import {
   userUpdateProfile,
 } from "../Controllers/UserController.js";
 
-import e from "express";
 import {
   checkAdmin,
   checkAuth,
@@ -24,8 +26,6 @@ import {
   // getCampaignsForUser,
 } from "../Controllers/UserCampaignController.js";
 import multer from "multer";
-
-const router = e.Router();
 // const upload = multer({ dest: "uploads/" }); // temp folder
 import upload from "../Middlewares/upload.js";
 

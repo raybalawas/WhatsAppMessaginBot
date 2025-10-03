@@ -16,7 +16,8 @@ app.use(
     // origin: "http://localhost:5173",
     // origin: "*", // your React app URL
     origin: [
-      "https://68da870ab842ae523a1b368c--capable-bubblegum-c45fb0.netlify.app",
+      "*",
+      // "https://68da870ab842ae523a1b368c--capable-bubblegum-c45fb0.netlify.app",
       "http://localhost:5173"
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
