@@ -45,8 +45,8 @@ async function getBrowser() {
       headless: false,
       defaultViewport: null,
       args: ["--start-maximized"],
-      // executablePath:
-      //   "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
+      executablePath:
+        "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
       userDataDir: "./whatsapp-session800", // Keeps QR session alive
     });
 
@@ -177,22 +177,16 @@ const generateHtmlReport = (processed, message) => {
 const generatePdfReport = async (processed, outputPath, message) => {
   const htmlContent = generateHtmlReport(processed, message);
 
-  // const browser = await puppeteer.launch({ headless: "new" });
+  // Launch separate Chrome instance for PDF
   const browser = await puppeteer.launch({
     headless: true,
-    args: [
-      "--no-sandbox",
-      "--disable-setuid-sandbox",
-      "--disable-dev-shm-usage",
-      "--disable-accelerated-2d-canvas",
-      "--no-zygote",
-      "--single-process",
-      "--disable-gpu",
-    ],
+    executablePath: "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe", // ✅ same as WhatsApp
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
-  const page = await browser.newPage();
 
+  const page = await browser.newPage();
   await page.setContent(htmlContent, { waitUntil: "networkidle0" });
+
   await page.pdf({
     path: outputPath,
     format: "A4",
@@ -203,6 +197,216 @@ const generatePdfReport = async (processed, outputPath, message) => {
 };
 
 /* ---------------- Campaign Sender ---------------- */
+// const MessageSend = async (req, res) => {
+//   try {
+//     const { userId, messageId, message, csvFileUrl, designFileUrl } = req.body;
+
+//     if (!message && !designFileUrl) {
+//       return res.status(400).json({
+//         status: "error",
+//         message: "Message or creative is required",
+//       });
+//     }
+
+//     // Download files temporarily
+//     const timestamp = Date.now();
+//     const tempCsvPath = path.join("uploads", `temp-csv-${timestamp}.csv`);
+//     const tempPdfPath = path.join("uploads", `report-${messageId}.pdf`);
+
+//     await downloadFile(csvFileUrl, tempCsvPath);
+
+//     let tempDesignPath = null;
+//     if (designFileUrl) {
+//       const ext = path.extname(new URL(designFileUrl).pathname) || ".png";
+//       tempDesignPath = path.join("uploads", `temp-design-${timestamp}${ext}`);
+//       await downloadFile(designFileUrl, tempDesignPath);
+//     }
+
+//     // Upload CSV & Design to Cloudinary
+//     const uploadCsv = await cloudinary.uploader.upload(tempCsvPath, {
+//       folder: "whatsapp_csv",
+//       resource_type: "raw",
+//     });
+
+//     const uploadDesign = tempDesignPath
+//       ? await cloudinary.uploader.upload(tempDesignPath, {
+//         folder: "whatsapp_designs",
+//         resource_type: "auto",
+//       })
+//       : null;
+
+//     const csvUrl = uploadCsv.secure_url;
+//     const designUrl = uploadDesign?.secure_url || null;
+
+//     // Parse numbers
+//     const rawPhones = await parseCsv(tempCsvPath);
+//     if (!rawPhones.length) {
+//       return res
+//         .status(400)
+//         .json({ status: "error", message: "No numbers in CSV." });
+//     }
+
+//     // Puppeteer flow
+//     const browser = await getBrowser();
+//     const page = await getWhatsappPage(browser);
+//     await page.goto("https://web.whatsapp.com");
+//     await sleep(20000);
+
+//     const processed = [];
+//     for (const rawPhone of rawPhones) {
+//       const phone = formatPhone(rawPhone);
+
+//       if (!/^\d{10,15}$/.test(phone)) {
+//         processed.push({ phone: rawPhone, status: "invalid" });
+//         continue;
+//       }
+
+//       try {
+//         console.log(`📨 Sending to ${phone}...`);
+//         await page.goto(
+//           `https://web.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(
+//             message
+//           )}`,
+//           { waitUntil: "domcontentloaded", timeout: 60000 }
+//         );
+
+//         // const inputBox = await page.waitForSelector(
+//         //   'div[contenteditable="true"]',
+//         //   { visible: true, timeout: 30000 }
+//         // );
+//         // await inputBox.click();
+//         // await page.keyboard.press("Enter");
+//         const inputBox = await page.$('div[contenteditable="true"]');
+//         if (inputBox) {
+//           await inputBox.focus();
+//           await page.keyboard.press("Enter");
+//           console.log(`✅ Message sent to ${phone} (via Enter key)`);
+//         // Confirm text sent
+//         await page.waitForSelector("div.message-out", { timeout: 10000 });
+//         processed.push({ phone, status: "sent" });
+//         await randomSleep();
+
+//         if (tempDesignPath) {
+//           try {
+//             const attachBtn = await page.waitForSelector(
+//               'span[data-icon="plus-rounded"]',
+//               { timeout: 10000 }
+//             );
+//             await attachBtn.click();
+//             await sleep(2000);
+
+//             const fileInput = await page.$('input[type="file"]');
+//             if (!fileInput) throw new Error("File input not found");
+//             await fileInput.uploadFile(tempDesignPath);
+
+//             await sleep(4000);
+
+//             let sendFileBtn = await page.$('button[aria-label="Send"]');
+//             if (!sendFileBtn) {
+//               sendFileBtn = await page.$('span[data-icon="send"]');
+//             }
+
+//             if (sendFileBtn) {
+//               await sendFileBtn.click();
+//               console.log(`✅ Creative sent to ${phone}`);
+//             } else {
+//               console.log("⚠️ Send button not found, trying Enter key...");
+//               const captionBox = await page.$('div[contenteditable="true"]');
+//               if (captionBox) {
+//                 await captionBox.focus();
+//                 await page.keyboard.press("Enter");
+//                 console.log(`✅ Creative sent to ${phone} (via Enter key)`);
+//               } else {
+//                 throw new Error("Send button and Enter key both failed");
+//               }
+//             }
+//           } catch (fileErr) {
+//             console.error(`❌ Failed to send creative to ${phone}:`, fileErr.message);
+//             processed.push({ phone, status: "file_error" });
+//           }
+//           await randomSleep();
+//         }
+
+//       } catch (err) {
+//         console.error(`❌ Error for ${phone}: ${err.message}`);
+//         processed.push({ phone, status: "error" });
+//       }
+//     }
+
+//     // Generate PDF report with HTML template
+//     await generatePdfReport(processed, tempPdfPath, message);
+
+//     const uploadReport = await cloudinary.uploader.upload(tempPdfPath, {
+//       folder: "whatsapp_reports",
+//       resource_type: "raw",
+//       format: "pdf",
+//       public_id: `report-${messageId}`
+//     });
+//     // console.log("Report uploaded && the url is:", uploadReport.secure_url);
+//     // const reportUrl = uploadReport.secure_url;
+//     // const reportUrl = `${uploadReport.secure_url}?fl_attachment`;
+//     // force download with filename
+//     const fileName = `report-${messageId}.pdf`;
+//     const downloadUrl = `${uploadReport.secure_url}?fl_attachment=${fileName}`;
+//     // const reportUrl = cloudinary.url(uploadReport.public_id, {
+//     //   resource_type: "raw",
+//     //   format: "pdf",
+//     //   attachment: true,               // 👈 Force download
+//     //   filename_override: `report-${messageId}.pdf`
+//     // });
+
+//     // const reportUrl = cloudinary.url(uploadReport.secure_url, {
+//     //   resource_type: "raw",
+//     //   format: "pdf",
+//     //   flags: fileName,  // 👈 forces download + custom filename
+//     // });
+
+//     // Save status
+//     const statusDocs = await statusModel.create({
+//       userId,
+//       messageId: messageId,
+//       message,
+//       generatedFile: downloadUrl,
+//     });
+//     // console.log("Download URL                 :", downloadUrl);
+//     // Update Message Table
+//     console.log(`📌 Updating Message record with ID: ${downloadUrl}`);
+//     console.log("status ki id jo messagemodel me store hogi:", statusDocs._id);
+//     if (messageId) {
+//       await messageModel.findByIdAndUpdate(
+//         messageId,
+//         {
+//           statusId: statusDocs._id,
+//           status: "completed",
+//           numbersCount: processed.length,
+//           sentCount: processed.filter((p) => p.status === "sent").length,
+//         },
+//         { new: true }
+//       );
+//     }
+//     if(!messageId) console.log("⚠️ No messageId provided to update record.");
+//     console.log("✅ Message record updated.");
+//     // Cleanup
+//     if (fs.existsSync(tempCsvPath)) fs.unlinkSync(tempCsvPath);
+//     if (tempDesignPath && fs.existsSync(tempDesignPath))
+//       fs.unlinkSync(tempDesignPath);
+//     if (fs.existsSync(tempPdfPath)) fs.unlinkSync(tempPdfPath);
+
+//     console.log("🎉 Campaign finished.");
+//     return res.json({
+//       status: "success",
+//       total: processed.length,
+//       sent: processed.filter((p) => p.status === "sent").length,
+//       invalid: processed.filter((p) => p.status === "invalid").length,
+//       failed: processed.filter((p) => p.status === "error").length,
+//       report: downloadUrl,
+//     });
+//   } catch (err) {
+//     console.error("❌ Error in MessageSend:", err);
+//     return res.status(500).json({ status: "error", message: "Server error" });
+//   }
+// };
+
 const MessageSend = async (req, res) => {
   try {
     const { userId, messageId, message, csvFileUrl, designFileUrl } = req.body;
@@ -214,7 +418,7 @@ const MessageSend = async (req, res) => {
       });
     }
 
-    // Download files temporarily
+    // Temporary file paths
     const timestamp = Date.now();
     const tempCsvPath = path.join("uploads", `temp-csv-${timestamp}.csv`);
     const tempPdfPath = path.join("uploads", `report-${messageId}.pdf`);
@@ -247,18 +451,20 @@ const MessageSend = async (req, res) => {
     // Parse numbers
     const rawPhones = await parseCsv(tempCsvPath);
     if (!rawPhones.length) {
-      return res
-        .status(400)
-        .json({ status: "error", message: "No numbers in CSV." });
+      return res.status(400).json({
+        status: "error",
+        message: "No numbers in CSV.",
+      });
     }
 
-    // Puppeteer flow
+    // Puppeteer setup
     const browser = await getBrowser();
     const page = await getWhatsappPage(browser);
     await page.goto("https://web.whatsapp.com");
     await sleep(20000);
 
     const processed = [];
+
     for (const rawPhone of rawPhones) {
       const phone = formatPhone(rawPhone);
 
@@ -270,24 +476,25 @@ const MessageSend = async (req, res) => {
       try {
         console.log(`📨 Sending to ${phone}...`);
         await page.goto(
-          `https://web.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(
-            message
-          )}`,
+          `https://web.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`,
           { waitUntil: "domcontentloaded", timeout: 60000 }
         );
 
-        const inputBox = await page.waitForSelector(
-          'div[contenteditable="true"]',
-          { visible: true, timeout: 30000 }
-        );
-        await inputBox.click();
-        await page.keyboard.press("Enter");
+        const inputBox = await page.$('div[contenteditable="true"]');
+        if (inputBox) {
+          await inputBox.focus();
+          await page.keyboard.press("Enter");
+          console.log(`✅ Message sent to ${phone}`);
+          await page.waitForSelector("div.message-out", { timeout: 10000 });
+          processed.push({ phone, status: "sent" });
+        } else {
+          processed.push({ phone, status: "failed" });
+          continue;
+        }
 
-        // Confirm text sent
-        await page.waitForSelector("div.message-out", { timeout: 10000 });
-        processed.push({ phone, status: "sent" });
         await randomSleep();
 
+        // If creative file exists
         if (tempDesignPath) {
           try {
             const attachBtn = await page.waitForSelector(
@@ -312,14 +519,13 @@ const MessageSend = async (req, res) => {
               await sendFileBtn.click();
               console.log(`✅ Creative sent to ${phone}`);
             } else {
-              console.log("⚠️ Send button not found, trying Enter key...");
+              console.log("⚠️ Send button not found, fallback to Enter");
               const captionBox = await page.$('div[contenteditable="true"]');
               if (captionBox) {
                 await captionBox.focus();
                 await page.keyboard.press("Enter");
-                console.log(`✅ Creative sent to ${phone} (via Enter key)`);
               } else {
-                throw new Error("Send button and Enter key both failed");
+                throw new Error("Send button and Enter both failed");
               }
             }
           } catch (fileErr) {
@@ -328,52 +534,38 @@ const MessageSend = async (req, res) => {
           }
           await randomSleep();
         }
-
       } catch (err) {
         console.error(`❌ Error for ${phone}: ${err.message}`);
         processed.push({ phone, status: "error" });
       }
+    } // ✅ this closes the for loop properly
+
+    // Generate report PDF
+    try {
+      await generatePdfReport(processed, tempPdfPath, message);
+    } catch (err) {
+      console.error("⚠️ PDF generation failed, skipping:", err.message);
     }
 
-    // Generate PDF report with HTML template
-    await generatePdfReport(processed, tempPdfPath, message);
 
     const uploadReport = await cloudinary.uploader.upload(tempPdfPath, {
       folder: "whatsapp_reports",
       resource_type: "raw",
       format: "pdf",
-      public_id: `report-${messageId}`
+      public_id: `report-${messageId}`,
     });
-    // console.log("Report uploaded && the url is:", uploadReport.secure_url);
-    // const reportUrl = uploadReport.secure_url;
-    // const reportUrl = `${uploadReport.secure_url}?fl_attachment`;
-    // force download with filename
+
     const fileName = `report-${messageId}.pdf`;
     const downloadUrl = `${uploadReport.secure_url}?fl_attachment=${fileName}`;
-    // const reportUrl = cloudinary.url(uploadReport.public_id, {
-    //   resource_type: "raw",
-    //   format: "pdf",
-    //   attachment: true,               // 👈 Force download
-    //   filename_override: `report-${messageId}.pdf`
-    // });
 
-    // const reportUrl = cloudinary.url(uploadReport.secure_url, {
-    //   resource_type: "raw",
-    //   format: "pdf",
-    //   flags: fileName,  // 👈 forces download + custom filename
-    // });
-
-    // Save status
+    // Save status in DB
     const statusDocs = await statusModel.create({
       userId,
-      messageId: messageId,
+      messageId,
       message,
       generatedFile: downloadUrl,
     });
-    // console.log("Download URL                 :", downloadUrl);
-    // Update Message Table
-    console.log(`📌 Updating Message record with ID: ${downloadUrl}`);
-    console.log("status ki id jo messagemodel me store hogi:", statusDocs._id);
+
     if (messageId) {
       await messageModel.findByIdAndUpdate(
         messageId,
@@ -386,12 +578,10 @@ const MessageSend = async (req, res) => {
         { new: true }
       );
     }
-    if(!messageId) console.log("⚠️ No messageId provided to update record.");
-    console.log("✅ Message record updated.");
-    // Cleanup
+
+    // Cleanup temp files
     if (fs.existsSync(tempCsvPath)) fs.unlinkSync(tempCsvPath);
-    if (tempDesignPath && fs.existsSync(tempDesignPath))
-      fs.unlinkSync(tempDesignPath);
+    if (tempDesignPath && fs.existsSync(tempDesignPath)) fs.unlinkSync(tempDesignPath);
     if (fs.existsSync(tempPdfPath)) fs.unlinkSync(tempPdfPath);
 
     console.log("🎉 Campaign finished.");
@@ -405,10 +595,12 @@ const MessageSend = async (req, res) => {
     });
   } catch (err) {
     console.error("❌ Error in MessageSend:", err);
-    return res.status(500).json({ status: "error", message: "Server error" });
+    return res.status(500).json({
+      status: "error",
+      message: "Server error",
+    });
   }
 };
-
 /* ---------- OTP Sender ---------- */
 const OTPSend = async (req, res) => {
   try {
