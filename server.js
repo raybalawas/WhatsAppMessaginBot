@@ -15,7 +15,9 @@ const allowedOrigins = [
   "http://localhost:5173",              // local dev
   "https://capable-bubblegum-c45fb0.netlify.app", // your deployed frontend
 ];
-
+if (allowedOrigins.indexOf(origin) === -1) {
+  return callback(new Error("Not allowed by CORS"), false);
+}
 app.use(
   cors({
     origin: function (origin, callback) {

@@ -45,8 +45,8 @@ async function getBrowser() {
       headless: false,
       defaultViewport: null,
       args: ["--start-maximized"],
-      executablePath:
-        "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
+      // executablePath:
+      //   "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
       userDataDir: "./whatsapp-session800", // Keeps QR session alive
     });
 
@@ -224,7 +224,7 @@ const MessageSend = async (req, res) => {
     let tempDesignPath = null;
     if (designFileUrl) {
       const ext = path.extname(new URL(designFileUrl).pathname) || ".png";
-      // tempDesignPath = path.join("uploads", `temp-design-${timestamp}${ext}`);
+      tempDesignPath = path.join("uploads", `temp-design-${timestamp}${ext}`);
       await downloadFile(designFileUrl, tempDesignPath);
     }
 
