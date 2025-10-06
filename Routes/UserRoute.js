@@ -11,6 +11,7 @@ import {
   userdelete,
   userUpdateProfile,
   userUpdatePassword,
+  userForgotPassword
 } from "../Controllers/UserController.js";
 
 import {
@@ -26,7 +27,7 @@ import {
   getCampaignsByUserId,
   getReportsForUser,
 } from "../Controllers/UserCampaignController.js";
-  // getCampaignsForUser,
+// getCampaignsForUser,
 // const upload = multer({ dest: "uploads/" }); // temp folder
 import upload from "../Middlewares/upload.js";
 
@@ -61,5 +62,6 @@ router.get("/reports/:id", checkAuth, checkUser, getReportsForUser);
 // router.get("/camp-status/:id", checkAuth, checkUser, getCampaignsForUser);
 
 router.put("/update-password", checkAuth, checkUser, userUpdatePassword);
+router.put("/forgot-password", userForgotPassword);
 export default router;
 

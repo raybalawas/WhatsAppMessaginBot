@@ -403,6 +403,42 @@ const userUpdatePassword = async (req, res) => {
   }
 }
 
+const userForgotPassword = async (req, res) => {
+  try {
+    const { newPassword, identifier } = req.body;
+    if (!identifier || !newPassword) {
+      return errorResponse(res, "Mobile number and new password are required", 400);
+    }
+    const userName = isNaN(identifier) ? null : Number(identifier);
+    console.log("Identifier received for password reset:", identifier);
+    console.log("Parsed mobile number:", userName);
+
+    const user = await userModel.findOne({
+      $or: [
+        { userName: identifier },
+        { email: identifier },
+      ]
+    });
+    // console.log("User found for password reset:", user);
+    if (!user) {
+      return errorResponse(res, "User with this mobile number not found", 404);
+    }
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    await userModel.findByIdAndUpdate(
+      user._id,
+      {
+        password: hashedNewPassword
+
+      });
+    const updatedUser = await userModel.findById(user._id);
+    // console.log("Updated user after password reset:", updatedUser);
+    return successResponse(res, "Password reset successfully!", updatedUser);
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    return errorResponse(res, "Something went wrong", 500);
+  }
+};
+
 export {
   Signup,
   Signin,
@@ -412,4 +448,5 @@ export {
   userdelete,
   userUpdateProfile,
   userUpdatePassword,
+  userForgotPassword,
 };
