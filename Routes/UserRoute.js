@@ -9,6 +9,7 @@ import {
   UserView,
   userUpdate,
   userdelete,
+  userProfile,
   userUpdateProfile,
   userUpdatePassword,
   userForgotPassword
@@ -37,6 +38,7 @@ router.get("/list", checkAuth, checkAdmin, UserList);
 router.get("/view/:id", checkAuth, checkAdmin, UserView);
 router.put("/update/:id", checkAuth, checkAdmin, userUpdate);
 router.delete("/delete/:id", checkAuth, checkAdmin, userdelete);
+router.get("/user-profile", checkAuth, checkUser, userProfile);
 router.put("/user-profile-update", checkAuth, checkUser, userUpdateProfile);
 router.post(
   "/submit-campaign",

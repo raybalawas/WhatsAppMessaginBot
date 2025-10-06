@@ -314,6 +314,22 @@ const userUpdate = async (req, res) => {
   }
 };
 
+const userProfile = async (req, res) => {
+  try {
+    const id = req.user?.id;
+    console.log(id);
+    const user = await userModel.findById(id);
+    if (!user) {
+      return errorResponse(res, 'user not found', 404);
+    }
+    console.log(`user found successfully! ${user}`)
+    return successResponse(res, 'user found successfully.', user);
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
+    return errorResponse(res, "Something went wrong", 500);
+  }
+}
+
 const userUpdateProfile = async (req, res) => {
   try {
     const id = req.user?.id;
@@ -407,7 +423,7 @@ const userForgotPassword = async (req, res) => {
   try {
     const { newPassword, identifier } = req.body;
     if (!identifier || !newPassword) {
-      return errorResponse(res, "Mobile number and new password are required", 400);
+      return errorResponse(res, "Mobile number, userName and new password are required", 400);
     }
     const userName = isNaN(identifier) ? null : Number(identifier);
     console.log("Identifier received for password reset:", identifier);
@@ -431,7 +447,6 @@ const userForgotPassword = async (req, res) => {
 
       });
     const updatedUser = await userModel.findById(user._id);
-    // console.log("Updated user after password reset:", updatedUser);
     return successResponse(res, "Password reset successfully!", updatedUser);
   } catch (error) {
     console.error("Error resetting password:", error);
@@ -445,7 +460,7 @@ export {
   UserList,
   UserView,
   userUpdate,
-  userdelete,
+  userdelete, userProfile,
   userUpdateProfile,
   userUpdatePassword,
   userForgotPassword,
