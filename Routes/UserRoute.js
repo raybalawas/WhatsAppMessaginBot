@@ -10,6 +10,7 @@ import {
   userUpdate,
   userdelete,
   userUpdateProfile,
+  userUpdatePassword,
 } from "../Controllers/UserController.js";
 
 import {
@@ -59,5 +60,6 @@ router.get("/reports/:id", checkAuth, checkUser, getReportsForUser);
 
 // router.get("/camp-status/:id", checkAuth, checkUser, getCampaignsForUser);
 
+router.put("/update-password/", checkAuth, checkUser, userUpdatePassword);
 export default router;
 

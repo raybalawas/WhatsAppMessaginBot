@@ -4,6 +4,7 @@ import userModel from "../models/usersModel.js";
 import { successResponse, errorResponse } from "../utils/response.js";
 import bcrypt from "bcrypt";
 import JWT from "jsonwebtoken";
+
 const Signup = async (req, res) => {
   try {
     const { name, userName, email, mobile, password } = req.body;
@@ -377,6 +378,31 @@ const userUpdateProfile = async (req, res) => {
   }
 };
 
+const userUpdatePassword = async (req, res) => {
+  try {
+    const id = req.user?.id;
+    const { oldPassword, newPassword } = req.body;
+    if (!oldPassword || !newPassword) {
+      return errorResponse(res, "Old and new passwords are required", 400);
+    }
+    const currentUser = await userModel.findById(id);
+    console.log("Current User for Password Update:", currentUser);
+    if (!currentUser) {
+      return errorResponse(res, "User not found", 404);
+    }
+    const isMatch = await bcrypt.compare(oldPassword, currentUser.password);
+    if (!isMatch) {
+      return errorResponse(res, "Old password is incorrect", 400);
+    }
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    const updatedUser = await userModel.findByIdAndUpdate(id, { password: hashedNewPassword });
+    return successResponse(res, "Password updated successfully!", updatedUser);
+  } catch (error) {
+    console.error("Error updating password:", error);
+    return errorResponse(res, "Something went wrong", 500);
+  }
+}
+
 export {
   Signup,
   Signin,
@@ -385,4 +411,5 @@ export {
   userUpdate,
   userdelete,
   userUpdateProfile,
+  userUpdatePassword,
 };

@@ -1,15 +1,9 @@
-2025/10/03-18:24:55.032 3190 Reusing MANIFEST D:\reactProjects\WhatsappBulkCampaign\whatsapp-session800\Default\Local Storage\leveldb/MANIFEST-000001
-2025/10/03-18:24:55.038 3190 Recovering log #165
-2025/10/03-18:24:55.041 3190 Reusing old log D:\reactProjects\WhatsappBulkCampaign\whatsapp-session800\Default\Local Storage\leveldb/000165.log 
-2025/10/03-18:30:56.052 3c38 Level-0 table #169: started
-2025/10/03-18:30:56.058 3c38 Level-0 table #169: 15007 bytes OK
-2025/10/03-18:30:56.060 3c38 Delete type=0 #165
-2025/10/03-18:30:56.062 3c38 Compacting 4@0 + 1@1 files
-2025/10/03-18:30:56.081 3c38 Generated table #170@0: 9027 keys, 195142 bytes
-2025/10/03-18:30:56.081 3c38 Compacted 4@0 + 1@1 files => 195142 bytes
-2025/10/03-18:30:56.082 3c38 compacted to: files[ 0 1 1 0 0 0 0 ]
-2025/10/03-18:30:56.083 3c38 Delete type=2 #159
-2025/10/03-18:30:56.083 3c38 Delete type=2 #161
-2025/10/03-18:30:56.083 3c38 Delete type=2 #163
-2025/10/03-18:30:56.083 3c38 Delete type=2 #166
-2025/10/03-18:30:56.083 3c38 Delete type=2 #169
+2025/10/06-14:46:10.612 2fa0 Reusing MANIFEST D:\reactProjects\WhatsappBulkCampaign\whatsapp-session800\Default\Local Storage\leveldb/MANIFEST-000001
+2025/10/06-14:46:10.619 2fa0 Recovering log #168
+2025/10/06-14:46:10.627 2fa0 Reusing old log D:\reactProjects\WhatsappBulkCampaign\whatsapp-session800\Default\Local Storage\leveldb/000168.log 
+2025/10/06-14:50:11.785 5318 Level-0 table #173: started
+2025/10/06-14:50:11.789 5318 Level-0 table #173: 12799 bytes OK
+2025/10/06-14:50:11.791 5318 Delete type=0 #168
+2025/10/06-16:06:14.367 5318 Level-0 table #175: started
+2025/10/06-16:06:14.372 5318 Level-0 table #175: 14158 bytes OK
+2025/10/06-16:06:14.374 5318 Delete type=0 #172
