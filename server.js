@@ -45,7 +45,13 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use("/api/users", UserRoutes);
 app.use("/api/whatsapp", WhatsAppRoutes);
-
+app.get("/", (req, res) => {
+  res.status(200).json({
+    status: true,
+    message: "Zerfinis WhatsApp API is running 🚀",
+    uptime: process.uptime(),
+  });
+});
 const PORT = process.env.PORT ?? 5000;
 
 app.listen(PORT, () => {
