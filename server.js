@@ -52,7 +52,7 @@ app.get("/", (req, res) => {
     uptime: process.uptime(),
   });
 });
-const PORT = process.env.PORT ?? 5000;
+const PORT = process.env.PORT ?? 5051;
 
 app.listen(PORT, () => {
   console.log(`server is started on port:http://localhost:${PORT}`);
