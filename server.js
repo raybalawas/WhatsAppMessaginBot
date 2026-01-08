@@ -29,7 +29,8 @@ app.use(
     //   }
     //   return callback(null, true);
     // },
-    origin: "*",
+    // origin: "*",
+    origin: ["https://zerfinis.it.com", "http://localhost:5173"],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
